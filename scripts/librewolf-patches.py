@@ -10,6 +10,7 @@ import sys
 import optparse
 import time
 import glob
+import json
 
 
 #
@@ -78,6 +79,11 @@ def leave_srcdir():
     if not options.no_execute:
         os.chdir("..")
 
+def read_source_info():
+    script_dir = os.path.dirname(os.path.realpath(__file__))
+    sources_path = os.path.join(script_dir, 'source.json')
+    with open(sources_path, 'r') as f:
+        return json.load(f)
 
         
 #
@@ -86,6 +92,8 @@ def leave_srcdir():
 
 
 def librewolf_patches():
+
+    sources = read_source_info()
 
     enter_srcdir()
     
@@ -119,9 +127,13 @@ def librewolf_patches():
     
     # insert the settings pane source (experimental)
     exec('rm -rf librewolf-pref-pane')
-    exec('git clone https://gitlab.com/librewolf-community/browser/librewolf-pref-pane.git')
+    pref_pane_source = sources["librewolf-pref-pane"]
+    pref_pane_url = pref_pane_source["url"]
+    pref_pane_rev = pref_pane_source["rev"]
+    exec(f'git clone {pref_pane_url}')
     os.chdir('librewolf-pref-pane')
-    exec('git diff 1fee314adc81000294fc0cf3196a758e4b64dace > ../lw/librewolf-pref-pane.patch')
+    exec(f'git checkout {pref_pane_rev}')
+    exec(f'git diff 1fee314adc81000294fc0cf3196a758e4b64dace > ../lw/librewolf-pref-pane.patch')
     os.chdir('..')        
     exec('rm -rf librewolf-pref-pane')
     
@@ -131,7 +143,11 @@ def librewolf_patches():
 
         
     ##! This is the moment in time we grab the Settings repo HEAD revision
-    exec('git clone https://gitlab.com/librewolf-community/settings.git')
+    settings_source = sources["settings"]
+    settings_url = settings_source["url"]
+    settings_rev = settings_source["rev"]
+    exec(f'git clone {settings_url}')
+    exec(f'git -C settings checkout {settings_rev}')
     exec("cp -v settings/defaults/pref/local-settings.js lw/")
     exec("cp -v settings/distribution/policies.json lw/")
     exec("cp -v settings/librewolf.cfg lw/")

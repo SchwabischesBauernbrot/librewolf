@@ -1,0 +1,10 @@
+{
+  "librewolf-pref-pane": {
+    "url": "https://gitlab.com/librewolf-community/browser/librewolf-pref-pane.git",
+    "rev": "310972b76947d038305fb481374afce9a3c57dc8"
+  },
+  "settings": {
+    "url": "https://gitlab.com/librewolf-community/settings.git",
+    "rev": "f868b4e16516664fa83081268a2adb4bffe0dd89"
+  }
+}
