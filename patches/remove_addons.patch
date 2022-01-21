@@ -2,7 +2,7 @@ diff --git a/browser/extensions/moz.build b/browser/extensions/moz.build
 index 269dcb2..ed7c31d 100644
 --- a/browser/extensions/moz.build
 +++ b/browser/extensions/moz.build
-@@ -5,11 +5,8 @@
+@@ -5,11 +5,9 @@
  # file, You can obtain one at http://mozilla.org/MPL/2.0/.
  
  DIRS += [
