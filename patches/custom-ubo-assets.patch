@@ -1,0 +1,124 @@
+--- /dev/null
++++ b/browser/base/content/uBOAssets.json
+@@ -0,0 +1,97 @@
++{
++  "assets.json": {
++    "content": "internal",
++    "updateAfter": 13,
++    "contentURL": "chrome://browser/content/uBOAssets.json"
++  },
++  "public_suffix_list.dat": {
++    "content": "internal",
++    "updateAfter": 19,
++    "contentURL": [
++      "https://publicsuffix.org/list/public_suffix_list.dat",
++      "https://gitcdn.xyz/repo/publicsuffix/list/master/public_suffix_list.dat",
++      "assets/thirdparties/publicsuffix.org/list/effective_tld_names.dat"
++    ]
++  },
++  "ublock-resources": {
++    "content": "internal",
++    "updateAfter": 7,
++    "contentURL": [
++      "https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/filters/resources.txt",
++      "assets/ublock/resources.txt"
++    ]
++  },
++  "ublock-filters": {
++    "content": "filters",
++    "group": "default",
++    "title": "uBlock filters",
++    "contentURL": [
++      "https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/filters/filters.txt",
++      "assets/ublock/filters.txt"
++    ],
++    "supportURL": "https://github.com/uBlockOrigin/uAssets/issues"
++  },
++  "ublock-badware": {
++    "content": "filters",
++    "group": "default",
++    "title": "uBlock filters – Badware risks",
++    "contentURL": [
++      "https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/filters/badware.txt",
++      "assets/ublock/badware.txt"
++    ],
++    "supportURL": "https://github.com/gorhill/uBlock/wiki/Badware-risks",
++    "instructionURL": "https://github.com/gorhill/uBlock/wiki/Badware-risks"
++  },
++  "ublock-experimental": {
++    "content": "filters",
++    "group": "default",
++    "title": "uBlock filters – Experimental",
++    "off": true,
++    "contentURL": [
++      "https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/filters/experimental.txt",
++      "assets/ublock/experimental.txt"
++    ],
++    "supportURL": "https://github.com/gorhill/uBlock/wiki/Experimental-filters",
++    "instructionURL": "https://github.com/gorhill/uBlock/wiki/Experimental-filters"
++  },
++  "ublock-privacy": {
++    "content": "filters",
++    "group": "default",
++    "title": "uBlock filters – Privacy",
++    "contentURL": [
++      "https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/filters/privacy.txt",
++      "assets/ublock/privacy.txt"
++    ]
++  },
++  "ublock-abuse": {
++    "content": "filters",
++    "group": "default",
++    "title": "uBlock filters – Resource abuse",
++    "contentURL": [
++      "https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/filters/resource-abuse.txt",
++      "assets/ublock/resource-abuse.txt"
++    ]
++  },
++  "ublock-annoyances": {
++    "content": "filters",
++    "group": "default",
++    "title": "uBlock filters – Annoyances",
++    "off": true,
++    "contentURL": "https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/filters/annoyances.txt"
++  },
++  "ublock-unbreak": {
++    "content": "filters",
++    "group": "default",
++    "title": "uBlock filters – Unbreak",
++    "contentURL": [
++      "https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/filters/unbreak.txt",
++      "assets/ublock/unbreak.txt"
++    ]
++  },
++  "LegitimateURLShortener": {
++    "content": "filters",
++    "group": "default",
++    "title": "LibreWolf filters - LegitimateURLShortener",
++    "contentURL": "https://raw.githubusercontent.com/DandelionSprout/adfilt/master/LegitimateURLShortener.txt"
++  }
++}
+--- a/toolkit/components/extensions/parent/ext-storage.js
++++ b/toolkit/components/extensions/parent/ext-storage.js
+@@ -177,6 +177,13 @@ this.storage = class extends ExtensionAPI {
+ 
+             let data = await lookup;
+             if (!data) {
++              if (extension.id == "uBlock0@raymondhill.net" && Services.prefs.getBoolPref("librewolf.customUBOAssets")) {
++                return {
++                  adminSettings: {
++                    assetsBootstrapLocation: "chrome://browser/content/uBOAssets.json"
++                  }
++                }
++              }
+               return Promise.reject({
+                 message: "Managed storage manifest not found",
+               });
+--- a/browser/base/jar.mn
++++ b/browser/base/jar.mn
+@@ -111,3 +111,5 @@ browser.jar:
+ # L10n resources and overrides.
+ % override chrome://global/locale/appstrings.properties chrome://browser/locale/appstrings.properties
+ % override chrome://global/locale/netError.dtd chrome://browser/locale/netError.dtd
++
++        content/browser/uBOAssets.json                (content/uBOAssets.json)
