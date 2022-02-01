@@ -18,3 +18,5 @@ patches/ui-patches/remove-organization-policy-banner.patch
 patches/ui-patches/remove-snippets-from-home.patch
 patches/ui-patches/sanitizing-description.patch
 patches/urlbarprovider-interventions.patch
+patches/ui-patches/add-connection-settings-button.patch
+patches/ui-patches/add-javascript-switch.patch

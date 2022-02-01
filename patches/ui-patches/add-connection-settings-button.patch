@@ -1,0 +1,67 @@
+--- a/browser/base/content/browser.js
++++ b/browser/base/content/browser.js
+@@ -8274,6 +8274,19 @@ function BrowserOpenAddonsMgr(aView) {
+   });
+ }
+ 
++async function BrowserOpenConnectionSettings() {
++  openPreferences("general");
++
++  function sleep(ms) {
++    return new Promise(resolve => setTimeout(resolve, ms));
++  }
++  await sleep(500);
++
++  let b = content.document.getElementById("connectionSettings");
++  b.focus();
++  b.click();
++}
++
+ function AddKeywordForSearchField() {
+   if (!gContextMenu) {
+     throw new Error("Context menu doesn't seem to be open.");
+--- a/browser/components/customizableui/CustomizableWidgets.jsm
++++ b/browser/components/customizableui/CustomizableWidgets.jsm
+@@ -577,6 +577,16 @@ if (AppConstants.platform == "macosx") {
+ }
+ CustomizableWidgets.push(preferencesButton);
+ 
++let connectionSettingsButton = {
++  id: "connection-settings-button",
++  l10nId: "toolbar-connection-settings-button",
++  onCommand(aEvent) {
++    let win = aEvent.target.ownerGlobal;
++    win.BrowserOpenConnectionSettings();
++  },
++};
++CustomizableWidgets.push(connectionSettingsButton);
++
+ if (Services.prefs.getBoolPref("privacy.panicButton.enabled")) {
+   CustomizableWidgets.push({
+     id: "panic-button",
+--- a/browser/locales/en-US/browser/browser.ftl
++++ b/browser/locales/en-US/browser/browser.ftl
+@@ -681,6 +681,10 @@ toolbar-settings-button =
+      *[other] Open settings
+   }
+ 
++toolbar-connection-settings-button =
++  .label = Connection Settings
++  .tooltiptext = Open connection settings
++
+ toolbar-overflow-customize-button =
+   .label = Customize toolbar…
+   .accesskey = C
+--- a/browser/themes/shared/toolbarbutton-icons.inc.css
++++ b/browser/themes/shared/toolbarbutton-icons.inc.css
+@@ -310,6 +310,10 @@ toolbar {
+   list-style-image: url("chrome://global/skin/icons/settings.svg");
+ }
+ 
++#connection-settings-button {
++  list-style-image: url("chrome://global/skin/icons/settings.svg");
++}
++
+ #PanelUI-menu-button {
+   list-style-image: url("chrome://browser/skin/menu.svg");
+ }
