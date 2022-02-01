@@ -1,22 +1,15 @@
 --- a/browser/base/content/browser.js
 +++ b/browser/base/content/browser.js
-@@ -8287,6 +8287,23 @@ async function BrowserOpenConnectionSettings() {
+@@ -8287,6 +8287,16 @@ async function BrowserOpenConnectionSettings() {
    b.click();
  }
  
-+function BrowserJavaScriptSwitch() {
-+  let js_state = Services.prefs.getBoolPref("javascript.enabled");
-+  let widget = CustomizableUI.getWidget("javascript-button").instances;
-+  let useIcon1 = "chrome://global/skin/icons/security-warning.svg";
-+  let useIcon2 = "chrome://global/skin/icons/security.svg";
-+
++function BrowserJavaScriptSwitch(js_state) {
 +  if (js_state) {
 +    Services.prefs.setBoolPref("javascript.enabled", false);
-+    widget[0].node.setAttribute("image", useIcon2);
 +    window.alert("JavaScript disabled");
 +  } else {
 +    Services.prefs.setBoolPref("javascript.enabled", true);
-+    widget[0].node.setAttribute("image", useIcon1);
 +    window.alert("JavaScript enabled");
 +  }
 +}
@@ -26,16 +19,39 @@
      throw new Error("Context menu doesn't seem to be open.");
 --- a/browser/components/customizableui/CustomizableWidgets.jsm
 +++ b/browser/components/customizableui/CustomizableWidgets.jsm
-@@ -587,6 +587,16 @@ let connectionSettingsButton = {
+@@ -587,6 +587,39 @@ let connectionSettingsButton = {
  };
  CustomizableWidgets.push(connectionSettingsButton);
  
++const jsIcon1 = "chrome://global/skin/icons/security-warning.svg";
++const jsIcon2 = "chrome://global/skin/icons/security.svg";
 +let javaScriptButton = {
 +  id: "javascript-button",
 +  l10nId: "toolbar-javascript-button",
++  onCreated(aNode) {
++    // Setup icon on startup
++    let js_state = Services.prefs.getBoolPref("javascript.enabled");
++
++    if (js_state) {
++      aNode.setAttribute("image", jsIcon1);
++    } else {
++      aNode.setAttribute("image", jsIcon2);
++    }
++  },
 +  onCommand(aEvent) {
 +    let win = aEvent.target.ownerGlobal;
-+    win.BrowserJavaScriptSwitch();
++    let js_state = Services.prefs.getBoolPref("javascript.enabled");
++    win.BrowserJavaScriptSwitch(js_state);
++
++    // Setup icon after switch
++    let js_state_new = Services.prefs.getBoolPref("javascript.enabled");
++    let widget = CustomizableUI.getWidget("javascript-button").instances;
++
++    if (js_state_new) {
++      widget[0].node.setAttribute("image", jsIcon1);
++    } else {
++      widget[0].node.setAttribute("image", jsIcon2);
++    }
 +  },
 +};
 +CustomizableWidgets.push(javaScriptButton);
