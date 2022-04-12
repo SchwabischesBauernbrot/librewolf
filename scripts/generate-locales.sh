@@ -1,4 +1,4 @@
-#!/usr/bin/sh
+#!/usr/bin/bash
 
 if [ ! -f browser/locales/shipped-locales ]; then
   echo "ERROR: Run this script from the root of the repository"

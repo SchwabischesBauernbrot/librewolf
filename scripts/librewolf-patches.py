@@ -128,7 +128,7 @@ def librewolf_patches():
             f.write("{}-{}".format(version,release))
 
     # generate locales
-    exec("sh ../scripts/generate-locales.sh")
+    exec("bash ../scripts/generate-locales.sh")
     
     leave_srcdir()
 
