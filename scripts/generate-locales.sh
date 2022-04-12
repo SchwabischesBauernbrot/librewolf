@@ -1,7 +1,7 @@
 #!/usr/bin/bash
 
 if [ ! -f browser/locales/shipped-locales ]; then
-  echo "ERROR: Run this script from the root of the repository"
+  echo "ERROR: Run this script from the root of the LibreWolf source code"
   exit 1
 fi
 
