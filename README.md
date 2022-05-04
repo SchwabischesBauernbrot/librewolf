@@ -145,7 +145,7 @@ hg diff > ../my-nightly-patch.patch
 ```
 And it can be uploaded to Bugzilla.
 
-##### *(excerpt of Mozilla readme)* Now the fun starts
+##### *(excerpt from the Mozilla readme)* Now the fun starts
 
 Time to start hacking! You should join us on [Matrix](https://chat.mozilla.org/), say hello in the [Introduction channel](https://chat.mozilla.org/#/room/#introduction:mozilla.org), and [find a bug to start working on](https://codetribute.mozilla.org/). See the [Firefox Contributors’ Quick Reference](https://firefox-source-docs.mozilla.org/contributing/contribution_quickref.html#firefox-contributors-quick-reference) to learn how to test your changes, send patches to Mozilla, update your source code locally, and more.
 
