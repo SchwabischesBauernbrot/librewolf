@@ -24,7 +24,7 @@ Currently active forks:
 
 ## LibreWolf build instructions
 
-There currently are two ways to build LibreWolf. You can either use the source tarball or compile directly with this repository.
+There are two ways to build LibreWolf. You can either use the source tarball or compile directly with this repository.
 
 ### Building from the Tarball
 
