@@ -8,7 +8,7 @@ List of browser build sub projects. These are the locations where people have th
 
 Currently active build repositories:
 * [Arch](https://gitlab.com/librewolf-community/browser/arch): Arch Linux
-* [Bsys5](https://gitlab.com/librewolf-community/browser/bsys5): deb/rpm for Mint,Fedora,Ubuntu; dmg for MacOS.
+* [Bsys5](https://gitlab.com/librewolf-community/browser/bsys5): .deb/.rpm for Mint, Fedora, Ubuntu; .dmg for MacOS.
 * [Debian](https://gitlab.com/librewolf-community/browser/debian): bgstack15 version
 * [Fedora](https://gitlab.com/librewolf-community/browser/fedora): bgstack15 version
 * [Flatpak](https://gitlab.com/librewolf-community/browser/flatpak): Flatpak
@@ -24,7 +24,7 @@ Currently active forks:
 
 ## LibreWolf build instructions
 
-There currently are two ways to build LibreWolf. You can either use the source tarball or compile directly with this repository.
+There are two ways to build LibreWolf. You can either use the source tarball or compile directly with this repository.
 
 ### Building from the Tarball
 
@@ -146,9 +146,13 @@ hg diff > ../my-nightly-patch.patch
 ```
 And it can be uploaded to Bugzilla.
 
-##### *(copy of Mozilla readme)* Now the fun starts
+##### *(excerpt from the Mozilla readme)* Now the fun starts
 
 Time to start hacking! You should join us on [Matrix](https://chat.mozilla.org/), say hello in the [Introduction channel](https://chat.mozilla.org/#/room/#introduction:mozilla.org), and [find a bug to start working on](https://codetribute.mozilla.org/). See the [Firefox Contributors’ Quick Reference](https://firefox-source-docs.mozilla.org/contributing/contribution_quickref.html#firefox-contributors-quick-reference) to learn how to test your changes, send patches to Mozilla, update your source code locally, and more.
 
-## Hey, I'm using a Mac or Windows :(
-We understand, life isn't always fair 😺. The same steps as above do apply, you'll just have to walk through the beginning part of the guides for [MacOS](https://firefox-source-docs.mozilla.org/setup/macos_build.html), [Windows](https://firefox-source-docs.mozilla.org/setup/windows_build.html). To build on Windows is not very well tested. The cross-compiled Mac .dmg files are also relatively new. It should work, perhaps with the exception of the `make setup-wasi` step. Help testing with these targets is always welcome.
+## Hey, I'm using MacOS or Windows :(
+We understand, life isn't always fair 😺. The same steps as above do apply, you'll just have to walk through the beginning part of the guides for:
+* [MacOS](https://firefox-source-docs.mozilla.org/setup/macos_build.html): The cross-compiled Mac .dmg files are somewhat new. They should work, perhaps with the exception of the `make setup-wasi` step.
+* [Windows](https://firefox-source-docs.mozilla.org/setup/windows_build.html): Building on Windows is not very well tested.
+
+Help with testing these targets is always welcome.
