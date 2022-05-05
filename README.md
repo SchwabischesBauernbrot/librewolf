@@ -9,7 +9,8 @@ List of browser build sub projects. These are the locations where people have th
 Currently active build repositories:
 * [Arch](https://gitlab.com/librewolf-community/browser/arch): PKGBUILDs for Arch Linux 
 * [Bsys5](https://gitlab.com/librewolf-community/browser/bsys5): binary packages for Debian (.deb), Fedora (.rpm) and MacOS (.dmg)
-* [Debian](https://gitlab.com/librewolf-community/browser/debian) and [Fedora](https://gitlab.com/librewolf-community/browser/fedora) packages, built by [B. Stack](https://gitlab.com/bgstack15) with a different method
+* [Debian](https://gitlab.com/librewolf-community/browser/debian) binary packages built by [B. Stack](https://gitlab.com/bgstack15) with a different method
+* [Fedora](https://gitlab.com/librewolf-community/browser/fedora) packages built by [B. Stack](https://gitlab.com/bgstack15) with a different method
 * [Flatpak](https://gitlab.com/librewolf-community/browser/flatpak)
 * [Gentoo](https://gitlab.com/librewolf-community/browser/gentoo)  
 * [Linux](https://gitlab.com/librewolf-community/browser/linux): Flatpak, AppImage, Arch and other Linux builds of the LibreWolf browser.
@@ -17,7 +18,7 @@ Currently active build repositories:
 * [Windows](https://gitlab.com/librewolf-community/browser/windows) builds
 
 Unofficial releases:
-* [OpenBSD port](https://librewolf.net/installation/openbsd/)
+* [OpenBSD](https://librewolf.net/installation/openbsd/)
 
 Currently active forks:
 * [CachyOS-Browser](https://github.com/cachyos/cachyos-browser-settings)
