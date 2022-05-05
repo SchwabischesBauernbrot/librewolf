@@ -1,26 +1,33 @@
 # LibreWolf Source Repository
 
-This repository contains all the patches and theming that make up LibreWolf, as well as scripts and a Makefile to build LibreWolf. There also is the [Settings repo](https://gitlab.com/librewolf-community/settings), which contains the LibreWolf prefs.
+This repository contains all the patches and theming that make up LibreWolf, as well as scripts and the Makefile to build LibreWolf. There's also the [Settings](https://gitlab.com/librewolf-community/settings) repo, which contains LibreWolf's custom settings.
 
-## Active repositories and projects
+## Active repositories and related projects
 
 List of browser build sub projects. These are the locations where people have their repositories and build artifacts.
 
 Currently active build repositories:
-* [Arch](https://gitlab.com/librewolf-community/browser/arch): Arch Linux
-* [Bsys5](https://gitlab.com/librewolf-community/browser/bsys5): .deb/.rpm for Mint, Fedora, Ubuntu; .dmg for MacOS.
-* [Debian](https://gitlab.com/librewolf-community/browser/debian): bgstack15 version
-* [Fedora](https://gitlab.com/librewolf-community/browser/fedora): bgstack15 version
-* [Flatpak](https://gitlab.com/librewolf-community/browser/flatpak): Flatpak
-* [Gentoo](https://gitlab.com/librewolf-community/browser/gentoo): Gentoo
-* [Linux](https://gitlab.com/librewolf-community/browser/linux): Flatpak, AppImage, Arch and other Linux builds of the LibreWolf browser.
-* [MacOS](https://gitlab.com/librewolf-community/browser/macos): The macOS build of LibreWolf.
-* [OpenBSD](https://librewolf.net/installation/openbsd/): OpenBSD page
-* [Windows](https://gitlab.com/librewolf-community/browser/windows): LibreWolf builds for Windows.
+* [Arch](https://gitlab.com/librewolf-community/browser/arch): PKGBUILDs for Arch Linux 
+* [Bsys5](https://gitlab.com/librewolf-community/browser/bsys5): packages for Debian (.deb), Fedora (.rpm) and MacOS (.dmg)
+* [Debian](https://gitlab.com/librewolf-community/browser/debian): packages by [B. Stack](https://gitlab.com/bgstack15), built from the native source code for highest compatibility
+* [Fedora](https://gitlab.com/librewolf-community/browser/fedora): packages by [B. Stack](https://gitlab.com/bgstack15), built from the
+native source code for highest compatibility 
+* [Flatpak](https://gitlab.com/librewolf-community/browser/flatpak): releases are [here](https://flathub.org/apps/details/io.gitlab.librewolf-community)
+* [Gentoo](https://gitlab.com/librewolf-community/browser/gentoo): portage instructions
+* [Linux](https://gitlab.com/librewolf-community/browser/linux): AppImage, Arch and other Linux builds
+* [MacOS](https://gitlab.com/librewolf-community/browser/macos): releases and build instructions
+* [Windows](https://gitlab.com/librewolf-community/browser/windows): releases and build instructions
+
+Unofficial releases:
+* [OpenBSD](https://librewolf.net/installation/openbsd/)
 
 Currently active forks:
-* Cachy-Browser: https://github.com/cachyos/cachyos-browser-settings
-* FireDragon: https://github.com/dr460nf1r3/firedragon-browser
+* [CachyOS-Browser](https://github.com/cachyos/cachyos-browser-settings)
+* [FireDragon](https://github.com/dr460nf1r3/firedragon-browser)
+
+## But how does it all fit together?
+
+![Explanatory graphics are fun, aren't they?](https://gitlab.com/librewolf-community/browser/windows/uploads/693a69bb847927e367c86d4ab555aa47/lw_diagram.png)
 
 ## LibreWolf build instructions
 
