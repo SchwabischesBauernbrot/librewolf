@@ -18,7 +18,7 @@ Currently active build repositories:
 * [Windows](https://gitlab.com/librewolf-community/browser/windows): LibreWolf builds for Windows.
 
 Unofficial releases:
-* [OpenBSD](https://librewolf.net/installation/openbsd/): learn how to fetch the BSD port.
+* [OpenBSD port](https://librewolf.net/installation/openbsd/)
 
 Currently active forks:
 * [CachyOS-Browser](https://github.com/cachyos/cachyos-browser-settings)
