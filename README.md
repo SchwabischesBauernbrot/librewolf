@@ -9,10 +9,9 @@ List of browser build sub projects. These are the locations where people have th
 Currently active build repositories:
 * [Arch](https://gitlab.com/librewolf-community/browser/arch): PKGBUILDs for Arch Linux 
 * [Bsys5](https://gitlab.com/librewolf-community/browser/bsys5): binary packages for Debian (.deb), Fedora (.rpm) and MacOS (.dmg)
-* [Debian](https://gitlab.com/librewolf-community/browser/debian): bgstack15 version
-* [Fedora](https://gitlab.com/librewolf-community/browser/fedora): bgstack15 version
+* additional binary packages for [Debian](https://gitlab.com/librewolf-community/browser/debian) and [Fedora](https://gitlab.com/librewolf-community/browser/fedora), built by (B. Stack)(https://gitlab.com/bgstack15) with a different method
 * [Flatpak](https://gitlab.com/librewolf-community/browser/flatpak)
-* [Gentoo](https://gitlab.com/librewolf-community/browser/gentoo) 
+* [Gentoo](https://gitlab.com/librewolf-community/browser/gentoo)  
 * [Linux](https://gitlab.com/librewolf-community/browser/linux): Flatpak, AppImage, Arch and other Linux builds of the LibreWolf browser.
 * [MacOS](https://gitlab.com/librewolf-community/browser/macos) builds
 * [Windows](https://gitlab.com/librewolf-community/browser/windows) builds
