@@ -43,14 +43,14 @@ cd <folder>
 
 Then, you have to bootstrap your system to be able to build LibreWolf. You only have to do this one time. It is done by running the following commands:
 
-```bash
+```
 ./mach --no-interactive bootstrap --application-choice=browser
 ./lw/setup-wasi-linux.sh
 ```
 
 Finally you can build LibreWolf and then package or run it with the following commands:
 
-```bash
+```
 ./mach build
 ./mach package
 # OR
@@ -61,26 +61,26 @@ Finally you can build LibreWolf and then package or run it with the following co
 
 First, clone this repository with Git:
 
-```bash
+```
 git clone --recursive https://gitlab.com/librewolf-community/browser/source.git librewolf-source
 cd librewolf-source
 ```
 
 Next, build the LibreWolf source code with the following command:
 
-```bash
+```
 make dir
 ```
 
 After that, you have to bootstrap your system to be able to build LibreWolf. You only have to do this one time. It is done by running the following command:
 
-```bash
+```
 make bootstrap
 ```
 
 Finally you can build LibreWolf and then package or run it with the following commands:
 
-```bash
+```
 make build
 make package
 # OR
