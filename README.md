@@ -14,9 +14,11 @@ Currently active build repositories:
 * [Flatpak](https://gitlab.com/librewolf-community/browser/flatpak): Flatpak
 * [Gentoo](https://gitlab.com/librewolf-community/browser/gentoo): Gentoo
 * [Linux](https://gitlab.com/librewolf-community/browser/linux): Flatpak, AppImage, Arch and other Linux builds of the LibreWolf browser.
-* [MacOS](https://gitlab.com/librewolf-community/browser/macos): The macOS build of LibreWolf.
-* [OpenBSD](https://librewolf.net/installation/openbsd/): OpenBSD page
+* [MacOS](https://gitlab.com/librewolf-community/browser/macos): the macOS build of LibreWolf.
 * [Windows](https://gitlab.com/librewolf-community/browser/windows): LibreWolf builds for Windows.
+
+Unofficial ports:
+* [OpenBSD](https://librewolf.net/installation/openbsd/): learn how to fetch the unofficial BSD port.
 
 Currently active forks:
 * [CachyOS-Browser](https://github.com/cachyos/cachyos-browser-settings)
