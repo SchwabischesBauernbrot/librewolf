@@ -13,7 +13,7 @@ Currently active build repositories:
 * [Fedora](https://gitlab.com/librewolf-community/browser/fedora) packages by [B. Stack](https://gitlab.com/bgstack15), same as above
 * [Flatpak](https://gitlab.com/librewolf-community/browser/flatpak)
 * [Gentoo](https://gitlab.com/librewolf-community/browser/gentoo)  
-* [Linux](https://gitlab.com/librewolf-community/browser/linux): Flatpak, AppImage, Arch and other Linux builds of the LibreWolf browser.
+* [Linux](https://gitlab.com/librewolf-community/browser/linux): Flatpak, AppImage, Arch and other Linux builds
 * [MacOS](https://gitlab.com/librewolf-community/browser/macos) builds
 * [Windows](https://gitlab.com/librewolf-community/browser/windows) builds
 
