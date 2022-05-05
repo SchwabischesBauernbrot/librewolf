@@ -9,13 +9,13 @@ List of browser build sub projects. These are the locations where people have th
 Currently active build repositories:
 * [Arch](https://gitlab.com/librewolf-community/browser/arch): PKGBUILDs for Arch Linux 
 * [Bsys5](https://gitlab.com/librewolf-community/browser/bsys5): packages for Debian (.deb), Fedora (.rpm) and MacOS (.dmg)
-* [Debian](https://gitlab.com/librewolf-community/browser/debian) packages by [B. Stack](https://gitlab.com/bgstack15), built from the native source code for highest compatibility
-* [Fedora](https://gitlab.com/librewolf-community/browser/fedora) packages by [B. Stack](https://gitlab.com/bgstack15), same as above
-* [Flatpak](https://gitlab.com/librewolf-community/browser/flatpak) releases
-* [Gentoo](https://gitlab.com/librewolf-community/browser/gentoo) portage instructions
+* [Debian](https://gitlab.com/librewolf-community/browser/debian): packages by [B. Stack](https://gitlab.com/bgstack15), built from the native source code for highest compatibility
+* [Fedora](https://gitlab.com/librewolf-community/browser/fedora): packages by [B. Stack](https://gitlab.com/bgstack15), same as above
+* [Flatpak](https://gitlab.com/librewolf-community/browser/flatpak): releases
+* [Gentoo](https://gitlab.com/librewolf-community/browser/gentoo): portage instructions
 * [Linux](https://gitlab.com/librewolf-community/browser/linux): Flatpak, AppImage, Arch and other Linux builds
-* [MacOS](https://gitlab.com/librewolf-community/browser/macos) builds
-* [Windows](https://gitlab.com/librewolf-community/browser/windows) builds
+* [MacOS](https://gitlab.com/librewolf-community/browser/macos): builds
+* [Windows](https://gitlab.com/librewolf-community/browser/windows): builds
 
 Unofficial releases:
 * [OpenBSD](https://librewolf.net/installation/openbsd/)
