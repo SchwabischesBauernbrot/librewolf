@@ -10,12 +10,13 @@ Currently active build repositories:
 * [Arch](https://gitlab.com/librewolf-community/browser/arch): PKGBUILDs for Arch Linux 
 * [Bsys5](https://gitlab.com/librewolf-community/browser/bsys5): packages for Debian (.deb), Fedora (.rpm) and MacOS (.dmg)
 * [Debian](https://gitlab.com/librewolf-community/browser/debian): packages by [B. Stack](https://gitlab.com/bgstack15), built from the native source code for highest compatibility
-* [Fedora](https://gitlab.com/librewolf-community/browser/fedora): packages by [B. Stack](https://gitlab.com/bgstack15), same as above
+* [Fedora](https://gitlab.com/librewolf-community/browser/fedora): packages by [B. Stack](https://gitlab.com/bgstack15), built from the
+native source code for highest compatibility 
 * [Flatpak](https://gitlab.com/librewolf-community/browser/flatpak)
 * [Gentoo](https://gitlab.com/librewolf-community/browser/gentoo): portage instructions
 * [Linux](https://gitlab.com/librewolf-community/browser/linux): Flatpak, AppImage, Arch and other Linux builds
 * [MacOS](https://gitlab.com/librewolf-community/browser/macos): releases and build instructions
-* [Windows](https://gitlab.com/librewolf-community/browser/windows): same as above
+* [Windows](https://gitlab.com/librewolf-community/browser/windows): releases and build instructions
 
 Unofficial releases:
 * [OpenBSD](https://librewolf.net/installation/openbsd/)
