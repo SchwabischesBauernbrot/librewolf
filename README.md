@@ -1,6 +1,6 @@
 # LibreWolf Source Repository
 
-This repository contains all the patches and theming that make up LibreWolf, as well as scripts and a Makefile to build LibreWolf. There also is the [Settings repo](https://gitlab.com/librewolf-community/settings), which contains the LibreWolf prefs.
+This repository contains all the patches and theming that make up LibreWolf, as well as scripts and the Makefile to build LibreWolf. There's also the [Settings](https://gitlab.com/librewolf-community/settings) repo, which contains LibreWolf's custom settings.
 
 ## Active repositories and related projects
 
