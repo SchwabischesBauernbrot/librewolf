@@ -19,8 +19,8 @@ Currently active build repositories:
 * [Windows](https://gitlab.com/librewolf-community/browser/windows): LibreWolf builds for Windows.
 
 Currently active forks:
+* [CachyOS-Browser](https://github.com/cachyos/cachyos-browser-settings)
 * [FireDragon](https://github.com/dr460nf1r3/firedragon-browser)
-* [Cachy Browser](https://github.com/cachyos/cachyos-browser-settings)
 
 ## But how does it all fit together?
 
