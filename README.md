@@ -20,7 +20,7 @@ Currently active build repositories:
 
 Currently active forks:
 * [FireDragon](https://github.com/dr460nf1r3/firedragon-browser)
-* [Cachy-Browser](https://github.com/cachyos/cachyos-browser-settings)
+* [Cachy Browser](https://github.com/cachyos/cachyos-browser-settings)
 
 ## But how does it all fit together?
 
