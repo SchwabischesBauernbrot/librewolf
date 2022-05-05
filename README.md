@@ -7,7 +7,7 @@ This repository contains all the patches and theming that make up LibreWolf, as 
 List of browser build sub projects. These are the locations where people have their repositories and build artifacts.
 
 Currently active build repositories:
-* [Arch](https://gitlab.com/librewolf-community/browser/arch): the PKGBUILDs for Arch Linux 
+* [Arch](https://gitlab.com/librewolf-community/browser/arch): the PKGBUILDs for Arch Linux. 
 * [Bsys5](https://gitlab.com/librewolf-community/browser/bsys5): .deb/.rpm for Mint, Fedora, Ubuntu; .dmg for MacOS.
 * [Debian](https://gitlab.com/librewolf-community/browser/debian): bgstack15 version
 * [Fedora](https://gitlab.com/librewolf-community/browser/fedora): bgstack15 version
