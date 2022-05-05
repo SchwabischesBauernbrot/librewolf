@@ -2,7 +2,7 @@
 
 This repository contains all the patches and theming that make up LibreWolf, as well as scripts and a Makefile to build LibreWolf. There also is the [Settings repo](https://gitlab.com/librewolf-community/settings), which contains the LibreWolf prefs.
 
-## Active repositories and projects
+## Actice repositories and related projects
 
 List of browser build sub projects. These are the locations where people have their repositories and build artifacts.
 
