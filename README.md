@@ -12,9 +12,9 @@ Currently active build repositories:
 * [Debian](https://gitlab.com/librewolf-community/browser/debian): packages by [B. Stack](https://gitlab.com/bgstack15), built from the native source code for highest compatibility
 * [Fedora](https://gitlab.com/librewolf-community/browser/fedora): packages by [B. Stack](https://gitlab.com/bgstack15), built from the
 native source code for highest compatibility 
-* [Flatpak](https://gitlab.com/librewolf-community/browser/flatpak)
+* [Flatpak](https://gitlab.com/librewolf-community/browser/flatpak): only source code, get the packages [here](https://flathub.org/apps/details/io.gitlab.librewolf-community)
 * [Gentoo](https://gitlab.com/librewolf-community/browser/gentoo): portage instructions
-* [Linux](https://gitlab.com/librewolf-community/browser/linux): Flatpak, AppImage, Arch and other Linux builds
+* [Linux](https://gitlab.com/librewolf-community/browser/linux): AppImage, Arch and other Linux builds
 * [MacOS](https://gitlab.com/librewolf-community/browser/macos): releases and build instructions
 * [Windows](https://gitlab.com/librewolf-community/browser/windows): releases and build instructions
 
