@@ -670,7 +670,7 @@ index 000000000000..c9c1284e294a
 +
 +#endif // nsKDEUtils
 diff --git a/uriloader/exthandler/HandlerServiceParent.cpp b/uriloader/exthandler/HandlerServiceParent.cpp
-index dbcc95d95646..5f2542a95065 100644
+index 6eefb48..08dfb1e 100644
 --- a/uriloader/exthandler/HandlerServiceParent.cpp
 +++ b/uriloader/exthandler/HandlerServiceParent.cpp
 @@ -12,7 +12,7 @@
@@ -680,14 +680,14 @@ index dbcc95d95646..5f2542a95065 100644
 -#  include "unix/nsGNOMERegistry.h"
 +#  include "unix/nsCommonRegistry.h"
  #endif
- 
+
  using mozilla::dom::ContentHandlerService;
-@@ -304,7 +304,7 @@ mozilla::ipc::IPCResult HandlerServiceParent::RecvExistsForProtocolOS(
-   }
+@@ -305,7 +305,7 @@ mozilla::ipc::IPCResult HandlerServiceParent::RecvExistsForProtocolOS(
  #ifdef MOZ_WIDGET_GTK
    // Check the GNOME registry for a protocol handler
--  *aHandlerExists = nsGNOMERegistry::HandlerExists(aProtocolScheme.get());
-+  *aHandlerExists = nsCommonRegistry::HandlerExists(aProtocolScheme.get());
+   *aHandlerExists =
+-      nsGNOMERegistry::HandlerExists(PromiseFlatCString(aProtocolScheme).get());
++      nsCommonRegistry::HandlerExists(PromiseFlatCString(aProtocolScheme).get());
  #else
    *aHandlerExists = false;
  #endif
