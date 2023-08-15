@@ -1,0 +1,30 @@
+name: Close PR on open
+on:
+  pull_request:
+    types: [opened]
+jobs:
+  close-pr:
+      runs-on: ubuntu-latest
+      permissions:
+        pull-requests: write
+      steps:
+        - name: Comment on PR
+          uses: actions/github-script@v6
+          with:
+            script: |
+              github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: 'We only admit contributions via [GitLab](https://gitlab.com/librewolf-community), this is only a mirror of the original repository. Thank you for your time.'
+              })
+        - name: Close PR
+          uses: actions/github-script@v6
+          with:
+            script: |
+              github.rest.pulls.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: context.issue.number,
+                state: 'closed'
+              })
