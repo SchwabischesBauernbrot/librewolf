@@ -1,0 +1,88 @@
+Re-add the image.webp.enabled pref.
+
+Ref https://hg.mozilla.org/mozilla-central/rev/188f0cf468d3
+
+--- b/image/DecoderFactory.cpp
++++ a/image/DecoderFactory.cpp
+@@ -79,7 +79,7 @@
+     type = DecoderType::ICON;
+ 
+     // WebP
+-  } else if (!strcmp(aMimeType, IMAGE_WEBP)) {
++  } else if (!strcmp(aMimeType, IMAGE_WEBP) && StaticPrefs::image_webp_enabled()) {
+     type = DecoderType::WEBP;
+ 
+     // AVIF
+--- b/image/build/nsImageModule.cpp
++++ a/image/build/nsImageModule.cpp
+@@ -60,10 +60,14 @@
+       mozilla::StaticPrefs::image_avif_enabled, "image/avif"_ns};
+   static ImageEnablementCookie kJXLCookie = {
+       mozilla::StaticPrefs::image_jxl_enabled, "image/jxl"_ns};
++  static ImageEnablementCookie kWebPCookie = {
++      mozilla::StaticPrefs::image_webp_enabled, "image/webp"_ns};
+   Preferences::RegisterCallbackAndCall(UpdateDocumentViewerRegistration,
+                                        "image.avif.enabled", &kAVIFCookie);
+   Preferences::RegisterCallbackAndCall(UpdateDocumentViewerRegistration,
+                                        "image.jxl.enabled", &kJXLCookie);
++  Preferences::RegisterCallbackAndCall(UpdateDocumentViewerRegistration,
++                                       "image.webp.enabled", &kWebPCookie);
+ 
+   mozilla::image::ShutdownTracker::Initialize();
+   mozilla::image::ImageFactory::Initialize();
+--- b/layout/build/components.conf
++++ a/layout/build/components.conf
+@@ -45,7 +45,6 @@
+     'image/pjpeg',
+     'image/png',
+     'image/vnd.microsoft.icon',
+-    'image/webp',
+     'image/x-icon',
+     'image/x-ms-bmp',
+     'image/x-png',
+--- b/modules/libpref/init/StaticPrefList.yaml
++++ a/modules/libpref/init/StaticPrefList.yaml
+@@ -7113,6 +7113,12 @@
+   value: false
+   mirror: always
+ 
++# Whether we attempt to decode WebP images or not.
++- name: image.webp.enabled
++  type: RelaxedAtomicBool
++  value: true
++  mirror: always
++
+ # Whether we attempt to decode AVIF images or not.
+ - name: image.avif.enabled
+   type: RelaxedAtomicBool
+--- b/netwerk/protocol/http/nsHttpHandler.cpp
++++ a/netwerk/protocol/http/nsHttpHandler.cpp
+@@ -216,8 +216,11 @@
+     mimeTypes.Append("image/jxl,");
+   }
+ 
+-  mimeTypes.Append("image/webp,*/*");
++  if (mozilla::StaticPrefs::image_webp_enabled()) {
++    mimeTypes.Append("image/webp,");
++  }
+ 
++  mimeTypes.Append("*/*");
+   return mimeTypes;
+ }
+ 
+@@ -292,6 +295,7 @@
+     "image.http.accept",
+     "image.avif.enabled",
+     "image.jxl.enabled",
++    "image.webp.enabled",
+     nullptr,
+ };
+ 
+@@ -1676,6 +1680,7 @@
+ 
+   const bool imageAcceptPrefChanged = PREF_CHANGED("image.http.accept") ||
+                                       PREF_CHANGED("image.avif.enabled") ||
++                                      PREF_CHANGED("image.webp.enabled") ||
+                                       PREF_CHANGED("image.jxl.enabled");
+ 
+   if (imageAcceptPrefChanged) {

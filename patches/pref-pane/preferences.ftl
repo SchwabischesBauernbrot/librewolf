@@ -46,6 +46,8 @@ librewolf-goog-safe-checkbox =
     .label = Enable Google Safe Browsing
 librewolf-goog-safe-download-checkbox =
     .label = Scan downloads
+librewolf-webp-checkbox =
+    .label = Enable webp
 
 # In-depth descriptions
 librewolf-extension-update-description = Keep extensions up to date without manual intervention. A good choice for your security.
@@ -82,6 +84,9 @@ librewolf-goog-safe-warning1 = Disabled over censorship concerns but recommended
 
 librewolf-goog-safe-download-description = Allow Safe Browsing to scan your downloads to identify suspicious files.
 librewolf-goog-safe-download-warning1 = All the checks happen locally.
+
+librewolf-webp-description = Don't accept/decode webp images.
+librewolf-webp-warning1 = Accept header differs from the default.
 
 # Footer
 librewolf-footer = Useful links

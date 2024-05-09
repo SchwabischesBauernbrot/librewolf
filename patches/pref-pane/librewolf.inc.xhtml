@@ -230,6 +230,18 @@
     </vbox>
   </vbox>
 
+  <hbox>
+    <checkbox id="librewolf-webp-checkbox" data-l10n-id="librewolf-webp-checkbox" preference="image.webp.enabled" flex="1" />
+    <html:label for="librewolf-webp-collapse" class="sidebar-footer-link" pack="end"> <image class="sidebar-footer-icon help-icon"/> </html:label>
+  </hbox>
+  <vbox class="librewolf-collapse indent">
+    <html:input type="checkbox" id="librewolf-webp-collapse" />
+    <vbox class="librewolf-collapsed tracking-protection-ui content-blocking-category">
+      <label data-l10n-id="librewolf-webp-description" />
+      <html:div> <image src="chrome://browser/skin/warning.svg" /> <label data-l10n-id="librewolf-webp-warning1" class="librewolf-warning" /> </html:div>
+      <checkbox preference="image.webp.enabled" label="image.webp.enabled" />
+    </vbox>
+  </vbox>
 </groupbox>
 
 <hbox class="subcategory" hidden="true" data-category="paneLibrewolf">
