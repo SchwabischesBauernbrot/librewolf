@@ -1,0 +1,2874 @@
+diff -x .svn -x .git -urN firefox-130.0.orig/browser/app/profile/firefox.js firefox-130.0/browser/app/profile/firefox.js
+--- firefox-130.0.orig/browser/app/profile/firefox.js	2024-09-07 17:26:32.074890868 -0700
++++ firefox-130.0/browser/app/profile/firefox.js	2024-09-07 17:27:15.783272499 -0700
+@@ -1949,23 +1949,6 @@
+ pref("sidebar.verticalTabs", false);
+ pref("sidebar.visibility", "always-show");
+ 
+-pref("browser.ml.chat.enabled", false);
+-pref("browser.ml.chat.hideLocalhost", true);
+-pref("browser.ml.chat.prompt.prefix", '{"l10nId":"genai-prompt-prefix-selection"}');
+-pref("browser.ml.chat.prompts.0", '{"id":"summarize","l10nId":"genai-prompts-summarize"}');
+-pref("browser.ml.chat.prompts.1", '{"id":"simplify","l10nId":"genai-prompts-simplify"}');
+-pref("browser.ml.chat.prompts.2", '{"id":"quiz","l10nId":"genai-prompts-quiz","targeting":"!provider|regExpMatch(\'gemini\')"}');
+-pref("browser.ml.chat.prompts.3", '{"id":"explain","l10nId":"genai-prompts-explain","targeting":"channel==\'nightly\'"}');
+-pref("browser.ml.chat.provider", "");
+-pref("browser.ml.chat.shortcuts", true);
+-#ifdef NIGHTLY_BUILD
+-pref("browser.ml.chat.shortcuts.custom", true);
+-#else
+-pref("browser.ml.chat.shortcuts.custom", false);
+-#endif
+-pref("browser.ml.chat.shortcuts.longPress", 60000);
+-pref("browser.ml.chat.sidebar", true);
+-
+ pref("security.protectionspopup.recordEventTelemetry", true);
+ pref("security.app_menu.recordEventTelemetry", true);
+ 
+diff -x .svn -x .git -urN firefox-130.0.orig/browser/base/content/browser.xhtml firefox-130.0/browser/base/content/browser.xhtml
+--- firefox-130.0.orig/browser/base/content/browser.xhtml	2024-09-07 17:26:31.874889122 -0700
++++ firefox-130.0/browser/base/content/browser.xhtml	2024-09-07 17:28:07.679725856 -0700
+@@ -66,7 +66,6 @@
+   <link rel="localization" href="browser/browserContext.ftl"/>
+   <link rel="localization" href="browser/browserSets.ftl"/>
+   <link rel="localization" href="browser/firefoxView.ftl"/>
+-  <link rel="localization" href="browser/genai.ftl"/>
+   <link rel="localization" href="browser/identityCredentialNotification.ftl" />
+   <link rel="localization" href="browser/menubar.ftl"/>
+   <link rel="localization" href="browser/originControls.ftl"/>
+diff -x .svn -x .git -urN firefox-130.0.orig/browser/base/content/nsContextMenu.sys.mjs firefox-130.0/browser/base/content/nsContextMenu.sys.mjs
+--- firefox-130.0.orig/browser/base/content/nsContextMenu.sys.mjs	2024-09-07 17:26:31.874889122 -0700
++++ firefox-130.0/browser/base/content/nsContextMenu.sys.mjs	2024-09-07 17:27:37.755464415 -0700
+@@ -13,7 +13,6 @@
+     "resource://gre/modules/ContextualIdentityService.sys.mjs",
+   DevToolsShim: "chrome://devtools-startup/content/DevToolsShim.sys.mjs",
+   E10SUtils: "resource://gre/modules/E10SUtils.sys.mjs",
+-  GenAI: "resource:///modules/GenAI.sys.mjs",
+   LoginHelper: "resource://gre/modules/LoginHelper.sys.mjs",
+   LoginManagerContextMenu:
+     "resource://gre/modules/LoginManagerContextMenu.sys.mjs",
+@@ -963,10 +962,6 @@
+ 
+     this.showAndFormatSearchContextItem();
+     this.showTranslateSelectionItem();
+-    lazy.GenAI.buildAskChatMenu(
+-      document.getElementById("context-ask-chat"),
+-      this
+-    );
+ 
+     // srcdoc cannot be opened separately due to concerns about web
+     // content with about:srcdoc in location bar masquerading as trusted
+diff -x .svn -x .git -urN firefox-130.0.orig/browser/components/BrowserGlue.sys.mjs firefox-130.0/browser/components/BrowserGlue.sys.mjs
+--- firefox-130.0.orig/browser/components/BrowserGlue.sys.mjs	2024-09-07 17:26:32.002890239 -0700
++++ firefox-130.0/browser/components/BrowserGlue.sys.mjs	2024-09-07 17:28:21.643847892 -0700
+@@ -50,7 +50,6 @@
+   FilePickerCrashed: "resource:///modules/FilePickerCrashed.sys.mjs",
+   FormAutofillUtils: "resource://gre/modules/shared/FormAutofillUtils.sys.mjs",
+   FxAccounts: "resource://gre/modules/FxAccounts.sys.mjs",
+-  GenAI: "resource:///modules/GenAI.sys.mjs",
+   HomePage: "resource:///modules/HomePage.sys.mjs",
+   Integration: "resource://gre/modules/Integration.sys.mjs",
+   Interactions: "resource:///modules/Interactions.sys.mjs",
+@@ -630,23 +629,6 @@
+     allFrames: true,
+   },
+ 
+-  GenAI: {
+-    parent: {
+-      esModuleURI: "resource:///actors/GenAIParent.sys.mjs",
+-    },
+-    child: {
+-      esModuleURI: "resource:///actors/GenAIChild.sys.mjs",
+-      events: {
+-        DOMContentLoaded: {},
+-        mousemove: {},
+-        resize: {},
+-        scroll: {},
+-      },
+-    },
+-    allFrames: true,
+-    enablePreference: "browser.ml.chat.enabled",
+-  },
+-
+   LightweightTheme: {
+     child: {
+       esModuleURI: "resource:///actors/LightweightThemeChild.sys.mjs",
+@@ -3225,13 +3207,6 @@
+         },
+       },
+ 
+-      {
+-        name: "GenAI.init",
+-        task() {
+-          lazy.GenAI.init();
+-        },
+-      },
+-
+       {
+         name: "QuickSuggest.init",
+         task: () => {
+diff -x .svn -x .git -urN firefox-130.0.orig/browser/components/genai/chat.css firefox-130.0/browser/components/genai/chat.css
+--- firefox-130.0.orig/browser/components/genai/chat.css	2024-09-07 17:26:31.982890064 -0700
++++ firefox-130.0/browser/components/genai/chat.css	1969-12-31 16:00:00.000000000 -0800
+@@ -1,18 +0,0 @@
+-/* This Source Code Form is subject to the terms of the Mozilla Public
+- * License, v. 2.0. If a copy of the MPL was not distributed with this
+- * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+-
+-body {
+-  inset: 0;
+-  margin: 0;
+-  position: absolute;
+-}
+-
+-browser {
+-  flex: 1;
+-}
+-
+-body, div {
+-  display: flex;
+-  flex-direction: column;
+-}
+diff -x .svn -x .git -urN firefox-130.0.orig/browser/components/genai/chat.html firefox-130.0/browser/components/genai/chat.html
+--- firefox-130.0.orig/browser/components/genai/chat.html	2024-09-07 17:26:31.982890064 -0700
++++ firefox-130.0/browser/components/genai/chat.html	1969-12-31 16:00:00.000000000 -0800
+@@ -1,27 +0,0 @@
+-<!-- This Source Code Form is subject to the terms of the Mozilla Public
+-   - License, v. 2.0. If a copy of the MPL was not distributed with this file,
+-   - You can obtain one at http://mozilla.org/MPL/2.0/. -->
+-<!DOCTYPE html>
+-<html xmlns="http://www.w3.org/1999/xhtml" role="document">
+-  <head>
+-    <meta charset="utf-8" />
+-    <meta
+-      http-equiv="Content-Security-Policy"
+-      content="default-src resource: chrome:; object-src 'none'; img-src data: chrome:;"
+-    />
+-    <meta name="color-scheme" content="light dark" />
+-    <link rel="localization" href="browser/genai.ftl" />
+-    <link
+-      rel="stylesheet"
+-      href="chrome://browser/content/sidebar/sidebar.css"
+-    />
+-    <link rel="stylesheet" href="chrome://browser/content/genai/chat.css" />
+-    <script src="chrome://browser/content/contentTheme.js"></script>
+-    <script src="chrome://browser/content/genai/chat.js"></script>
+-  </head>
+-  <body>
+-    <div>
+-      <select id="provider"></select>
+-    </div>
+-  </body>
+-</html>
+diff -x .svn -x .git -urN firefox-130.0.orig/browser/components/genai/chat.js firefox-130.0/browser/components/genai/chat.js
+--- firefox-130.0.orig/browser/components/genai/chat.js	2024-09-07 17:26:31.982890064 -0700
++++ firefox-130.0/browser/components/genai/chat.js	1969-12-31 16:00:00.000000000 -0800
+@@ -1,132 +0,0 @@
+-/* This Source Code Form is subject to the terms of the Mozilla Public
+- * License, v. 2.0. If a copy of the MPL was not distributed with this
+- * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+-
+-const lazy = {};
+-ChromeUtils.defineESModuleGetters(lazy, {
+-  GenAI: "resource:///modules/GenAI.sys.mjs",
+-});
+-const { XPCOMUtils } = ChromeUtils.importESModule(
+-  "resource://gre/modules/XPCOMUtils.sys.mjs"
+-);
+-
+-XPCOMUtils.defineLazyPreferenceGetter(
+-  lazy,
+-  "providerPref",
+-  "browser.ml.chat.provider",
+-  null,
+-  renderProviders
+-);
+-
+-const node = {};
+-
+-function request(url = lazy.providerPref) {
+-  try {
+-    node.chat.fixupAndLoadURIString(url, {
+-      triggeringPrincipal: Services.scriptSecurityManager.createNullPrincipal(
+-        {}
+-      ),
+-    });
+-  } catch (ex) {
+-    console.error("Failed to request chat provider", ex);
+-  }
+-}
+-
+-function renderChat() {
+-  const browser = document.createXULElement("browser");
+-  browser.setAttribute("type", "content");
+-  browser.setAttribute("remote", "true");
+-  return document.body.appendChild(browser);
+-}
+-
+-async function renderProviders() {
+-  // Skip potential pref change callback when unloading
+-  if ((await document.visibilityState) == "hidden") {
+-    return null;
+-  }
+-
+-  const select = document.getElementById("provider");
+-  select.innerHTML = "";
+-  let selected = false;
+-
+-  const addOption = (text, val) => {
+-    const option = select.appendChild(document.createElement("option"));
+-    option.textContent = text;
+-    option.value = val;
+-    return option;
+-  };
+-
+-  // Add the known providers in order while looking for current selection
+-  lazy.GenAI.chatProviders.forEach((data, url) => {
+-    const option = addOption(data.name, url);
+-    if (lazy.providerPref == url) {
+-      option.selected = true;
+-      selected = true;
+-    } else if (data.hidden) {
+-      option.hidden = true;
+-    }
+-  });
+-
+-  // Must be a custom preference if provider wasn't found
+-  if (!selected) {
+-    const option = addOption(
+-      `Custom provider (${lazy.providerPref})`,
+-      lazy.providerPref
+-    );
+-    option.selected = true;
+-  }
+-
+-  // Update provider telemetry
+-  const providerId = lazy.GenAI.getProviderId(lazy.providerPref);
+-  Glean.genaiChatbot.provider.set(providerId);
+-  if (renderProviders.lastId && document.hasFocus()) {
+-    Glean.genaiChatbot.providerChange.record({
+-      current: providerId,
+-      previous: renderProviders.lastId,
+-      surface: "panel",
+-    });
+-  }
+-  renderProviders.lastId = providerId;
+-
+-  // Load the requested provider
+-  request();
+-  return select;
+-}
+-
+-function handleChange({ target }) {
+-  const { value } = target;
+-  switch (target) {
+-    case node.provider:
+-      Services.prefs.setStringPref("browser.ml.chat.provider", value);
+-      break;
+-  }
+-}
+-addEventListener("change", handleChange);
+-
+-// Expose a promise for loading and rendering the chat browser element
+-var browserPromise = new Promise((resolve, reject) => {
+-  addEventListener("load", async () => {
+-    try {
+-      node.chat = renderChat();
+-      node.provider = await renderProviders();
+-      resolve(node.chat);
+-    } catch (ex) {
+-      console.error("Failed to render on load", ex);
+-      reject(ex);
+-    }
+-
+-    Glean.genaiChatbot.sidebarToggle.record({
+-      opened: true,
+-      provider: lazy.GenAI.getProviderId(),
+-      reason: "load",
+-    });
+-  });
+-});
+-
+-addEventListener("unload", () =>
+-  Glean.genaiChatbot.sidebarToggle.record({
+-    opened: false,
+-    provider: lazy.GenAI.getProviderId(),
+-    reason: "unload",
+-  })
+-);
+diff -x .svn -x .git -urN firefox-130.0.orig/browser/components/genai/GenAIChild.sys.mjs firefox-130.0/browser/components/genai/GenAIChild.sys.mjs
+--- firefox-130.0.orig/browser/components/genai/GenAIChild.sys.mjs	2024-09-07 17:26:31.982890064 -0700
++++ firefox-130.0/browser/components/genai/GenAIChild.sys.mjs	1969-12-31 16:00:00.000000000 -0800
+@@ -1,75 +0,0 @@
+-/* This Source Code Form is subject to the terms of the Mozilla Public
+- * License, v. 2.0. If a copy of the MPL was not distributed with this
+- * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+-
+-import { XPCOMUtils } from "resource://gre/modules/XPCOMUtils.sys.mjs";
+-
+-const lazy = {};
+-XPCOMUtils.defineLazyPreferenceGetter(
+-  lazy,
+-  "shortcutsDelay",
+-  "browser.ml.chat.shortcuts.longPress"
+-);
+-
+-// Additional events to listen with others to create the actor in BrowserGlue
+-const EVENTS = ["mousedown", "mouseup"];
+-
+-/**
+- * JSWindowActor to detect content page events to send GenAI related data.
+- */
+-export class GenAIChild extends JSWindowActorChild {
+-  actorCreated() {
+-    this.document.addEventListener("selectionchange", this);
+-    // Use capture as some pages might stop the events
+-    EVENTS.forEach(ev => this.contentWindow.addEventListener(ev, this, true));
+-  }
+-
+-  didDestroy() {
+-    this.document.removeEventListener("selectionchange", this);
+-    EVENTS.forEach(ev =>
+-      this.contentWindow?.removeEventListener(ev, this, true)
+-    );
+-  }
+-
+-  handleEvent(event) {
+-    const sendHide = () => this.sendQuery("GenAI:HideShortcuts", event.type);
+-    switch (event.type) {
+-      case "mousedown":
+-        this.downTime = Date.now();
+-        sendHide();
+-        break;
+-      case "mouseup": {
+-        // Only handle plain clicks
+-        if (
+-          event.button ||
+-          event.altKey ||
+-          event.ctrlKey ||
+-          event.metaKey ||
+-          event.shiftKey
+-        ) {
+-          return;
+-        }
+-
+-        // Show immediately on selection or allow long press with no selection
+-        const selection =
+-          this.contentWindow.getSelection()?.toString().trim() ?? "";
+-        const delay = Date.now() - (this.downTime ?? 0);
+-        if (selection || delay > lazy.shortcutsDelay) {
+-          this.sendQuery("GenAI:ShowShortcuts", {
+-            delay,
+-            selection,
+-            x: event.screenX,
+-            y: event.screenY,
+-          });
+-        }
+-        break;
+-      }
+-      case "resize":
+-      case "scroll":
+-      case "selectionchange":
+-        // Hide if selection might have shifted away from shortcuts
+-        sendHide();
+-        break;
+-    }
+-  }
+-}
+diff -x .svn -x .git -urN firefox-130.0.orig/browser/components/genai/GenAIParent.sys.mjs firefox-130.0/browser/components/genai/GenAIParent.sys.mjs
+--- firefox-130.0.orig/browser/components/genai/GenAIParent.sys.mjs	2024-09-07 17:26:31.982890064 -0700
++++ firefox-130.0/browser/components/genai/GenAIParent.sys.mjs	1969-12-31 16:00:00.000000000 -0800
+@@ -1,21 +0,0 @@
+-/* This Source Code Form is subject to the terms of the Mozilla Public
+- * License, v. 2.0. If a copy of the MPL was not distributed with this
+- * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+-
+-const lazy = {};
+-ChromeUtils.defineESModuleGetters(lazy, {
+-  GenAI: "resource:///modules/GenAI.sys.mjs",
+-});
+-
+-/**
+- * JSWindowActor to pass data between GenAI singleton and content pages.
+- */
+-export class GenAIParent extends JSWindowActorParent {
+-  receiveMessage({ data, name }) {
+-    lazy.GenAI.handleShortcutsMessage(
+-      name,
+-      data,
+-      this.browsingContext.topFrameElement
+-    );
+-  }
+-}
+diff -x .svn -x .git -urN firefox-130.0.orig/browser/components/genai/GenAI.sys.mjs firefox-130.0/browser/components/genai/GenAI.sys.mjs
+--- firefox-130.0.orig/browser/components/genai/GenAI.sys.mjs	2024-09-07 17:26:31.982890064 -0700
++++ firefox-130.0/browser/components/genai/GenAI.sys.mjs	1969-12-31 16:00:00.000000000 -0800
+@@ -1,793 +0,0 @@
+-/**
+- * This Source Code Form is subject to the terms of the Mozilla Public
+- * License, v. 2.0. If a copy of the MPL was not distributed with this
+- * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+- */
+-
+-import { XPCOMUtils } from "resource://gre/modules/XPCOMUtils.sys.mjs";
+-
+-const lazy = {};
+-ChromeUtils.defineESModuleGetters(lazy, {
+-  ASRouterTargeting: "resource:///modules/asrouter/ASRouterTargeting.sys.mjs",
+-  EveryWindow: "resource:///modules/EveryWindow.sys.mjs",
+-  ExperimentAPI: "resource://nimbus/ExperimentAPI.sys.mjs",
+-  NimbusFeatures: "resource://nimbus/ExperimentAPI.sys.mjs",
+-  PrefUtils: "resource://normandy/lib/PrefUtils.sys.mjs",
+-});
+-ChromeUtils.defineLazyGetter(
+-  lazy,
+-  "l10n",
+-  () => new Localization(["browser/genai.ftl"])
+-);
+-XPCOMUtils.defineLazyPreferenceGetter(
+-  lazy,
+-  "chatEnabled",
+-  "browser.ml.chat.enabled",
+-  null,
+-  (_pref, _old, val) => onChatEnabledChange(val)
+-);
+-XPCOMUtils.defineLazyPreferenceGetter(
+-  lazy,
+-  "chatHideFromLabs",
+-  "browser.ml.chat.hideFromLabs",
+-  false
+-);
+-XPCOMUtils.defineLazyPreferenceGetter(
+-  lazy,
+-  "chatHideLabsShortcuts",
+-  "browser.ml.chat.hideLabsShortcuts",
+-  false
+-);
+-XPCOMUtils.defineLazyPreferenceGetter(
+-  lazy,
+-  "chatHideLocalhost",
+-  "browser.ml.chat.hideLocalhost",
+-  null,
+-  reorderChatProviders
+-);
+-XPCOMUtils.defineLazyPreferenceGetter(
+-  lazy,
+-  "chatNimbus",
+-  "browser.ml.chat.nimbus"
+-);
+-XPCOMUtils.defineLazyPreferenceGetter(
+-  lazy,
+-  "chatOpenSidebarOnProviderChange",
+-  "browser.ml.chat.openSidebarOnProviderChange",
+-  true
+-);
+-XPCOMUtils.defineLazyPreferenceGetter(
+-  lazy,
+-  "chatPromptPrefix",
+-  "browser.ml.chat.prompt.prefix"
+-);
+-XPCOMUtils.defineLazyPreferenceGetter(
+-  lazy,
+-  "chatProvider",
+-  "browser.ml.chat.provider",
+-  null,
+-  (_pref, _old, val) => onChatProviderChange(val)
+-);
+-XPCOMUtils.defineLazyPreferenceGetter(
+-  lazy,
+-  "chatProviders",
+-  "browser.ml.chat.providers",
+-  "claude,chatgpt,gemini,huggingchat,lechat",
+-  reorderChatProviders
+-);
+-XPCOMUtils.defineLazyPreferenceGetter(
+-  lazy,
+-  "chatShortcuts",
+-  "browser.ml.chat.shortcuts",
+-  null,
+-  (_pref, _old, val) => onChatShortcutsChange(val)
+-);
+-XPCOMUtils.defineLazyPreferenceGetter(
+-  lazy,
+-  "chatShortcutsCustom",
+-  "browser.ml.chat.shortcuts.custom"
+-);
+-XPCOMUtils.defineLazyPreferenceGetter(
+-  lazy,
+-  "chatSidebar",
+-  "browser.ml.chat.sidebar"
+-);
+-
+-export const GenAI = {
+-  // Cache of potentially localized prompt
+-  chatPromptPrefix: "",
+-
+-  // Any chat provider can be used and those that match the URLs in this object
+-  // will allow for additional UI shown such as populating dropdown with a name,
+-  // showing links, and other special behaviors needed for individual providers.
+-  chatProviders: new Map([
+-    // Until bug 1903900 to better handle max length issues, track in comments
+-    // ~14k max length uri before 431
+-    [
+-      "https://claude.ai/new",
+-      {
+-        id: "claude",
+-        link1:
+-          "https://www.anthropic.com/legal/archive/6370fb23-12ed-41d9-a4a2-28866dee3105",
+-        link2:
+-          "https://www.anthropic.com/legal/archive/7197103a-5e27-4ee4-93b1-f2d4c39ba1e7",
+-        link3:
+-          "https://www.anthropic.com/legal/archive/628feec9-7df9-4d38-bc69-fbf104df47b0",
+-        linksId: "genai-settings-chat-claude-links",
+-        name: "Anthropic Claude",
+-      },
+-    ],
+-    // ~14k max length uri before 431
+-    [
+-      "https://chatgpt.com",
+-      {
+-        id: "chatgpt",
+-        link1: "https://openai.com/terms",
+-        link2: "https://openai.com/privacy",
+-        linksId: "genai-settings-chat-chatgpt-links",
+-        name: "ChatGPT",
+-      },
+-    ],
+-    // ~4k max length uri before 400
+-    [
+-      "https://www.bing.com/chat?sendquery=1",
+-      {
+-        id: "copilot",
+-        link1: "https://www.bing.com/new/termsofuse",
+-        link2: "https://go.microsoft.com/fwlink/?LinkId=521839",
+-        linksId: "genai-settings-chat-copilot-links",
+-        name: "Copilot",
+-      },
+-    ],
+-    // ~20k max length uri before 400
+-    // ~55k max header (no ?q=) before 413
+-    [
+-      "https://gemini.google.com",
+-      {
+-        header: "X-Firefox-Gemini",
+-        id: "gemini",
+-        link1: "https://policies.google.com/terms",
+-        link2: "https://policies.google.com/terms/generative-ai/use-policy",
+-        link3: "https://support.google.com/gemini?p=privacy_notice",
+-        linksId: "genai-settings-chat-gemini-links",
+-        name: "Google Gemini",
+-      },
+-    ],
+-    // ~8k max length uri before 413
+-    [
+-      "https://huggingface.co/chat",
+-      {
+-        id: "huggingchat",
+-        link1: "https://huggingface.co/chat/privacy",
+-        link2: "https://huggingface.co/privacy",
+-        linksId: "genai-settings-chat-huggingchat-links",
+-        name: "HuggingChat",
+-      },
+-    ],
+-    // ~4k max length uri before 502
+-    [
+-      "https://chat.mistral.ai/chat",
+-      {
+-        id: "lechat",
+-        link1: "https://mistral.ai/terms/#terms-of-service-le-chat",
+-        link2: "https://mistral.ai/terms/#privacy-policy",
+-        linksId: "genai-settings-chat-lechat-links",
+-        name: "Le Chat Mistral",
+-      },
+-    ],
+-    // 8k max length uri before 414
+-    [
+-      "http://localhost:8080",
+-      {
+-        id: "localhost",
+-        link1: "https://llamafile.ai",
+-        linksId: "genai-settings-chat-localhost-links",
+-        name: "localhost",
+-      },
+-    ],
+-  ]),
+-
+-  /**
+-   * Handle startup tasks like telemetry, adding listeners.
+-   */
+-  init() {
+-    // Access getters for side effects of observing pref changes
+-    lazy.chatEnabled;
+-    lazy.chatHideLocalhost;
+-    lazy.chatProvider;
+-    lazy.chatProviders;
+-    lazy.chatShortcuts;
+-
+-    // Apply initial ordering of providers
+-    reorderChatProviders();
+-
+-    // Handle nimbus feature pref setting
+-    const featureId = "chatbot";
+-    lazy.NimbusFeatures[featureId].onUpdate(() => {
+-      const feature = { featureId };
+-      const enrollment =
+-        lazy.ExperimentAPI.getRolloutMetaData(feature) ??
+-        lazy.ExperimentAPI.getExperimentMetaData(feature);
+-      if (!enrollment?.slug) {
+-        return;
+-      }
+-
+-      // Set prefs on any branch if we have a new enrollment slug, otherwise
+-      // only set default branch as those only last for the session
+-      const anyBranch = enrollment.slug != lazy.chatNimbus;
+-      const setPref = ([pref, { branch = "user", value = null }]) => {
+-        if (anyBranch || branch == "default") {
+-          lazy.PrefUtils.setPref("browser.ml.chat." + pref, value, { branch });
+-        }
+-      };
+-      setPref(["nimbus", { value: enrollment.slug }]);
+-      Object.entries(
+-        lazy.NimbusFeatures[featureId].getVariable("prefs")
+-      ).forEach(setPref);
+-    });
+-
+-    // Detect about:preferences to add controls
+-    Services.obs.addObserver(this, "experimental-pane-loaded");
+-    // Check existing windows that might have preferences before init
+-    lazy.EveryWindow.readyWindows.forEach(window => {
+-      const content = window.gBrowser.selectedBrowser.contentWindow;
+-      if (content?.location.href.startsWith("about:preferences")) {
+-        this.buildPreferences(content);
+-      }
+-    });
+-
+-    // Record glean metrics after applying nimbus prefs
+-    Glean.genaiChatbot.enabled.set(lazy.chatEnabled);
+-    Glean.genaiChatbot.provider.set(this.getProviderId());
+-    Glean.genaiChatbot.shortcuts.set(lazy.chatShortcuts);
+-    Glean.genaiChatbot.shortcutsCustom.set(lazy.chatShortcutsCustom);
+-    Glean.genaiChatbot.sidebar.set(lazy.chatSidebar);
+-  },
+-
+-  uninit() {
+-    Services.obs.removeObserver(this, "experimental-pane-loaded");
+-  },
+-
+-  /**
+-   * Convert provider to id.
+-   *
+-   * @param {string} provider url defaulting to current pref
+-   * @returns {string} id or custom or none
+-   */
+-  getProviderId(provider = lazy.chatProvider) {
+-    const { id } = this.chatProviders.get(provider) ?? {};
+-    return id ?? (provider ? "custom" : "none");
+-  },
+-
+-  /**
+-   * Add chat items to menu or popup.
+-   *
+-   * @param {MozBrowser} browser providing context
+-   * @param {string} selection text
+-   * @param {Function} itemAdder creates and returns the item
+-   * @param {string} entry name
+-   * @param {Function} cleanup optional on item activation
+-   * @returns {object} context used for selecting prompts
+-   */
+-  async addAskChatItems(browser, selection, itemAdder, entry, cleanup) {
+-    // Prepare context used for both targeting and handling prompts
+-    const window = browser.ownerGlobal;
+-    const tab = window.gBrowser.getTabForBrowser(browser);
+-    const uri = browser.currentURI;
+-    const context = {
+-      entry,
+-      provider: lazy.chatProvider,
+-      selection,
+-      tabTitle: (tab._labelIsContentTitle && tab.label) || "",
+-      url: uri.asciiHost + uri.filePath,
+-      window,
+-    };
+-
+-    // Add items that pass along context for handling
+-    (await this.getContextualPrompts(context)).forEach(promptObj =>
+-      itemAdder(promptObj).addEventListener("command", () => {
+-        this.handleAskChat(promptObj, context);
+-        cleanup?.();
+-      })
+-    );
+-    return context;
+-  },
+-
+-  /**
+-   * Handle messages from content to show or hide shortcuts.
+-   *
+-   * @param {string} name of message
+-   * @param {object} data for the message
+-   * @param {MozBrowser} browser that provided the message
+-   */
+-  handleShortcutsMessage(name, data, browser) {
+-    if (!lazy.chatEnabled || !lazy.chatShortcuts || lazy.chatProvider == "") {
+-      return;
+-    }
+-    const stack = browser.closest(".browserStack");
+-    if (!stack) {
+-      return;
+-    }
+-
+-    let shortcuts = stack.querySelector(".content-shortcuts");
+-    const window = browser.ownerGlobal;
+-    const { document } = window;
+-    const popup = document.getElementById("ask-chat-shortcuts");
+-    const hide = () => {
+-      if (shortcuts) {
+-        shortcuts.removeAttribute("shown");
+-      }
+-      popup.hidePopup();
+-    };
+-
+-    switch (name) {
+-      case "GenAI:HideShortcuts":
+-        hide();
+-        break;
+-      case "GenAI:ShowShortcuts": {
+-        // Add shortcuts to the current tab's brower stack if it doesn't exist
+-        if (!shortcuts) {
+-          shortcuts = stack.appendChild(document.createElement("div"));
+-          shortcuts.className = "content-shortcuts";
+-
+-          // Detect hover to build and open the popup
+-          shortcuts.addEventListener("mouseover", async () => {
+-            if (!shortcuts.hasAttribute("active")) {
+-              shortcuts.toggleAttribute("active");
+-              const vbox = popup.querySelector("vbox");
+-              vbox.innerHTML = "";
+-              const context = await this.addAskChatItems(
+-                browser,
+-                shortcuts.selection,
+-                promptObj => {
+-                  const button = vbox.appendChild(
+-                    document.createXULElement("toolbarbutton")
+-                  );
+-                  button.className = "subviewbutton";
+-                  button.setAttribute("tabindex", "0");
+-                  button.textContent = promptObj.label;
+-                  return button;
+-                },
+-                "shortcuts",
+-                hide
+-              );
+-
+-              // Add custom input box if configured
+-              if (lazy.chatShortcutsCustom) {
+-                vbox.appendChild(document.createXULElement("toolbarseparator"));
+-                const input = vbox.appendChild(document.createElement("input"));
+-                const provider = this.chatProviders.get(
+-                  lazy.chatProvider
+-                )?.name;
+-                document.l10n.setAttributes(
+-                  input,
+-                  provider
+-                    ? "genai-input-ask-provider"
+-                    : "genai-input-ask-generic",
+-                  { provider }
+-                );
+-                input.style.margin = "var(--arrowpanel-menuitem-margin)";
+-                input.addEventListener("mouseover", () => input.focus());
+-                input.addEventListener("change", () => {
+-                  this.handleAskChat({ value: input.value }, context);
+-                  hide();
+-                });
+-              }
+-
+-              popup.openPopup(shortcuts);
+-              popup.addEventListener(
+-                "popuphidden",
+-                () => shortcuts.removeAttribute("active"),
+-                { once: true }
+-              );
+-              Glean.genaiChatbot.shortcutsExpanded.record({
+-                selection: shortcuts.selection.length,
+-              });
+-            }
+-          });
+-        }
+-
+-        // Save the latest selection so it can be used by popup
+-        shortcuts.selection = data.selection;
+-        if (shortcuts.hasAttribute("shown")) {
+-          return;
+-        }
+-
+-        shortcuts.toggleAttribute("shown");
+-        Glean.genaiChatbot.shortcutsDisplayed.record({
+-          delay: data.delay,
+-          selection: data.selection.length,
+-        });
+-
+-        // Position the shortcuts relative to the browser's top-left corner
+-        const rect = browser.getBoundingClientRect();
+-        shortcuts.style.setProperty(
+-          "--shortcuts-x",
+-          data.x - window.screenX - rect.x + "px"
+-        );
+-        shortcuts.style.setProperty(
+-          "--shortcuts-y",
+-          data.y - window.screenY - rect.y + "px"
+-        );
+-        break;
+-      }
+-    }
+-  },
+-
+-  /**
+-   * Build prompts menu to ask chat for context menu.
+-   *
+-   * @param {MozMenu} menu element to update
+-   * @param {nsContextMenu} nsContextMenu helpers for context menu
+-   */
+-  async buildAskChatMenu(menu, nsContextMenu) {
+-    nsContextMenu.showItem(menu, false);
+-    if (!lazy.chatEnabled || lazy.chatProvider == "") {
+-      return;
+-    }
+-    const provider = this.chatProviders.get(lazy.chatProvider)?.name;
+-    menu.ownerDocument.l10n.setAttributes(
+-      menu,
+-      provider ? "genai-menu-ask-provider" : "genai-menu-ask-generic",
+-      { provider }
+-    );
+-    menu.menupopup?.remove();
+-    await this.addAskChatItems(
+-      nsContextMenu.browser,
+-      nsContextMenu.selectionInfo.fullText ?? "",
+-      promptObj => menu.appendItem(promptObj.label),
+-      "menu"
+-    );
+-    nsContextMenu.showItem(menu, menu.itemCount > 0);
+-  },
+-
+-  /**
+-   * Get prompts from prefs evaluated with context
+-   *
+-   * @param {object} context data used for targeting
+-   * @returns {promise} array of matching prompt objects
+-   */
+-  async getContextualPrompts(context) {
+-    // Treat prompt objects as messages to reuse targeting capabilities
+-    const messages = [];
+-    const toFormat = [];
+-    Services.prefs.getChildList("browser.ml.chat.prompts.").forEach(pref => {
+-      try {
+-        const promptObj = {
+-          label: Services.prefs.getStringPref(pref),
+-          targeting: "true",
+-          value: "",
+-        };
+-        try {
+-          // Prompts can be JSON with label, value, targeting and other keys
+-          Object.assign(promptObj, JSON.parse(promptObj.label));
+-
+-          // Ignore provided id (if any) for modified prefs
+-          if (Services.prefs.prefHasUserValue(pref)) {
+-            promptObj.id = null;
+-          }
+-        } catch (ex) {}
+-        messages.push(promptObj);
+-        if (promptObj.l10nId) {
+-          toFormat.push(promptObj);
+-        }
+-      } catch (ex) {
+-        console.error("Failed to get prompt pref " + pref, ex);
+-      }
+-    });
+-
+-    // Apply localized attributes for prompts
+-    (await lazy.l10n.formatMessages(toFormat.map(obj => obj.l10nId))).forEach(
+-      (msg, idx) =>
+-        msg?.attributes.forEach(attr => (toFormat[idx][attr.name] = attr.value))
+-    );
+-
+-    return lazy.ASRouterTargeting.findMatchingMessage({
+-      messages,
+-      returnAll: true,
+-      trigger: { context },
+-    });
+-  },
+-
+-  /**
+-   * Updates chat prompt prefix.
+-   */
+-  async prepareChatPromptPrefix() {
+-    if (
+-      !this.chatPromptPrefix ||
+-      this.chatLastPrefix != lazy.chatPromptPrefix
+-    ) {
+-      try {
+-        // Check json for localized prefix
+-        const prefixObj = JSON.parse(lazy.chatPromptPrefix);
+-        this.chatPromptPrefix = (
+-          await lazy.l10n.formatMessages([
+-            {
+-              id: prefixObj.l10nId,
+-              args: { tabTitle: "%tabTitle%", selection: "%selection|12000%" },
+-            },
+-          ])
+-        )[0].value;
+-      } catch (ex) {
+-        // Treat as plain text prefix
+-        this.chatPromptPrefix = lazy.chatPromptPrefix;
+-      }
+-      if (this.chatPromptPrefix) {
+-        this.chatPromptPrefix += "\n\n";
+-      }
+-      this.chatLastPrefix = lazy.chatPromptPrefix;
+-    }
+-  },
+-
+-  /**
+-   * Build a prompt with context.
+-   *
+-   * @param {MozMenuItem} item Use value falling back to label
+-   * @param {object} context Placeholder keys with values to replace
+-   * @returns {string} Prompt with placeholders replaced
+-   */
+-  buildChatPrompt(item, context = {}) {
+-    // Combine prompt prefix with the item then replace placeholders from the
+-    // original prompt (and not from context)
+-    return (this.chatPromptPrefix + (item.value || item.label)).replace(
+-      // Handle %placeholder% as key|options
+-      /\%(\w+)(?:\|([^%]+))?\%/g,
+-      (placeholder, key, options) =>
+-        // Currently only supporting numeric options for slice with `undefined`
+-        // resulting in whole string
+-        context[key]?.slice(0, options) ?? placeholder
+-    );
+-  },
+-
+-  /**
+-   * Handle selected prompt by opening tab or sidebar.
+-   *
+-   * @param {object} promptObj to convert to string
+-   * @param {object} context of how the prompt should be handled
+-   */
+-  async handleAskChat(promptObj, context) {
+-    Glean.genaiChatbot[
+-      context.entry == "menu"
+-        ? "contextmenuPromptClick"
+-        : "shortcutsPromptClick"
+-    ].record({
+-      prompt: promptObj.id ?? "custom",
+-      provider: this.getProviderId(),
+-      selection: context.selection?.length ?? 0,
+-    });
+-
+-    await this.prepareChatPromptPrefix();
+-    const prompt = this.buildChatPrompt(promptObj, context);
+-
+-    // Pass the prompt via GET url ?q= param or request header
+-    const { header } = this.chatProviders.get(lazy.chatProvider) ?? {};
+-    const url = new URL(lazy.chatProvider);
+-    const options = {
+-      inBackground: false,
+-      relatedToCurrent: true,
+-      triggeringPrincipal: Services.scriptSecurityManager.createNullPrincipal(
+-        {}
+-      ),
+-    };
+-    if (header) {
+-      options.headers = Cc[
+-        "@mozilla.org/io/string-input-stream;1"
+-      ].createInstance(Ci.nsIStringInputStream);
+-      options.headers.data = `${header}: ${encodeURIComponent(prompt)}\r\n`;
+-    } else {
+-      url.searchParams.set("q", prompt);
+-    }
+-
+-    // Get the desired browser to handle the prompt url request
+-    let browser;
+-    if (lazy.chatSidebar) {
+-      const { SidebarController } = context.window;
+-      await SidebarController.show("viewGenaiChatSidebar");
+-      browser = await SidebarController.browser.contentWindow.browserPromise;
+-    } else {
+-      browser = context.window.gBrowser.addTab("", options).linkedBrowser;
+-    }
+-    browser.fixupAndLoadURIString(url, options);
+-  },
+-
+-  /**
+-   * Build preferences for chat such as handling providers.
+-   *
+-   * @param {Window} window for about:preferences
+-   */
+-  buildPreferences({ document, Preferences }) {
+-    // Section can be hidden by featuregate targeting
+-    const providerEl = document.getElementById("genai-chat-provider");
+-    if (!providerEl) {
+-      return;
+-    }
+-
+-    // Some experiments might want to hide shortcuts
+-    const shortcutsEl = document.getElementById("genai-chat-shortcuts");
+-    if (lazy.chatHideLabsShortcuts || lazy.chatHideFromLabs) {
+-      shortcutsEl.remove();
+-    }
+-
+-    // Page can load (restore at startup) just before default prefs apply
+-    if (lazy.chatHideFromLabs) {
+-      providerEl.parentNode.remove();
+-      document.getElementById("genai-chat").remove();
+-      return;
+-    }
+-
+-    const enabled = Preferences.get("browser.ml.chat.enabled");
+-    const onEnabledChange = () => {
+-      providerEl.disabled = !enabled.value;
+-      shortcutsEl.disabled = !enabled.value;
+-
+-      // Update enabled telemetry
+-      Glean.genaiChatbot.enabled.set(enabled.value);
+-      if (onEnabledChange.canChange) {
+-        Glean.genaiChatbot.experimentCheckboxClick.record({
+-          enabled: enabled.value,
+-        });
+-      }
+-      onEnabledChange.canChange = true;
+-    };
+-    onEnabledChange();
+-    enabled.on("change", onEnabledChange);
+-
+-    // Populate providers and hide from list if necessary
+-    this.chatProviders.forEach((data, url) => {
+-      providerEl.appendItem(data.name, url).hidden = data.hidden ?? false;
+-    });
+-    const provider = Preferences.add({
+-      id: "browser.ml.chat.provider",
+-      type: "string",
+-    });
+-    let customItem;
+-    const onProviderChange = () => {
+-      // Add/update the Custom entry if it's not a default provider entry
+-      if (provider.value && !this.chatProviders.has(provider.value)) {
+-        if (!customItem) {
+-          customItem = providerEl.appendItem();
+-        }
+-        customItem.label = `Custom (${provider.value})`;
+-        customItem.value = provider.value;
+-
+-        // Select the item if the preference changed not via menu
+-        providerEl.selectedItem = customItem;
+-      }
+-
+-      // Update potentially multiple links for the provider
+-      const links = document.getElementById("genai-chat-links");
+-      const providerData = this.chatProviders.get(provider.value);
+-      for (let i = 1; i <= 3; i++) {
+-        const name = `link${i}`;
+-        let link = links.querySelector(`[data-l10n-name=${name}]`);
+-        const href = providerData?.[name];
+-        if (href) {
+-          if (!link) {
+-            link = links.appendChild(document.createElement("a"));
+-            link.dataset.l10nName = name;
+-            link.target = "_blank";
+-          }
+-          link.href = href;
+-        } else {
+-          link?.remove();
+-        }
+-      }
+-      document.l10n.setAttributes(
+-        links,
+-        providerData?.linksId ?? "genai-settings-chat-links"
+-      );
+-
+-      // Update provider telemetry
+-      const providerId = this.getProviderId(provider.value);
+-      Glean.genaiChatbot.provider.set(providerId);
+-      if (onProviderChange.lastId && document.hasFocus()) {
+-        Glean.genaiChatbot.providerChange.record({
+-          current: providerId,
+-          previous: onProviderChange.lastId,
+-          surface: "settings",
+-        });
+-      }
+-      onProviderChange.lastId = providerId;
+-    };
+-    onProviderChange();
+-    provider.on("change", onProviderChange);
+-
+-    const shortcuts = Preferences.add({
+-      id: "browser.ml.chat.shortcuts",
+-      type: "bool",
+-    });
+-    const onShortcutsChange = () => {
+-      // Update shortcuts telemetry
+-      Glean.genaiChatbot.shortcuts.set(shortcuts.value);
+-      if (onShortcutsChange.canChange) {
+-        Glean.genaiChatbot.shortcutsCheckboxClick.record({
+-          enabled: shortcuts.value,
+-        });
+-      }
+-      onShortcutsChange.canChange = true;
+-    };
+-    onShortcutsChange();
+-    shortcuts.on("change", onShortcutsChange);
+-  },
+-
+-  // nsIObserver
+-  observe(window) {
+-    this.buildPreferences(window);
+-  },
+-};
+-
+-/**
+- * Ensure the chat sidebar get closed.
+- *
+- * @param {bool} value New pref value
+- */
+-function onChatEnabledChange(value) {
+-  if (!value) {
+-    lazy.EveryWindow.readyWindows.forEach(({ SidebarController }) => {
+-      if (
+-        SidebarController.isOpen &&
+-        SidebarController.currentID == "viewGenaiChatSidebar"
+-      ) {
+-        SidebarController.hide();
+-      }
+-    });
+-  }
+-}
+-
+-/**
+- * Ensure the chat sidebar is shown to reflect changed provider.
+- *
+- * @param {string} value New pref value
+- */
+-function onChatProviderChange(value) {
+-  if (value && lazy.chatEnabled && lazy.chatOpenSidebarOnProviderChange) {
+-    Services.wm
+-      .getMostRecentWindow("navigator:browser")
+-      ?.SidebarController.show("viewGenaiChatSidebar");
+-  }
+-}
+-
+-/**
+- * Ensure the chat shortcuts get hidden.
+- *
+- * @param {bool} value New pref value
+- */
+-function onChatShortcutsChange(value) {
+-  if (!value) {
+-    lazy.EveryWindow.readyWindows.forEach(window =>
+-      window.document
+-        .querySelectorAll(".content-shortcuts")
+-        .forEach(shortcuts => shortcuts.removeAttribute("shown"))
+-    );
+-  }
+-}
+-
+-/**
+- * Update the ordering of chat providers Map.
+- */
+-function reorderChatProviders() {
+-  // Figure out which providers to include in order
+-  const ordered = lazy.chatProviders.split(",");
+-  if (!lazy.chatHideLocalhost) {
+-    ordered.push("localhost");
+-  }
+-
+-  // Convert the url keys to lookup by id
+-  const idToKey = new Map([...GenAI.chatProviders].map(([k, v]) => [v.id, k]));
+-
+-  // Remove providers in the desired order and make them shown
+-  const toSet = [];
+-  ordered.forEach(id => {
+-    const key = idToKey.get(id);
+-    const val = GenAI.chatProviders.get(key);
+-    if (val) {
+-      val.hidden = false;
+-      toSet.push([key, val]);
+-      GenAI.chatProviders.delete(key);
+-    }
+-  });
+-
+-  // Hide unremoved providers before re-adding visible ones in order
+-  GenAI.chatProviders.forEach(val => (val.hidden = true));
+-  toSet.forEach(args => GenAI.chatProviders.set(...args));
+-}
+diff -x .svn -x .git -urN firefox-130.0.orig/browser/components/genai/jar.mn firefox-130.0/browser/components/genai/jar.mn
+--- firefox-130.0.orig/browser/components/genai/jar.mn	2024-09-07 17:26:31.982890064 -0700
++++ firefox-130.0/browser/components/genai/jar.mn	1969-12-31 16:00:00.000000000 -0800
+@@ -1,8 +0,0 @@
+-# This Source Code Form is subject to the terms of the Mozilla Public
+-# License, v. 2.0. If a copy of the MPL was not distributed with this
+-# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+-
+-browser.jar:
+-    content/browser/genai/chat.css
+-    content/browser/genai/chat.html
+-    content/browser/genai/chat.js
+diff -x .svn -x .git -urN firefox-130.0.orig/browser/components/genai/metrics.yaml firefox-130.0/browser/components/genai/metrics.yaml
+--- firefox-130.0.orig/browser/components/genai/metrics.yaml	2024-09-07 17:26:31.982890064 -0700
++++ firefox-130.0/browser/components/genai/metrics.yaml	1969-12-31 16:00:00.000000000 -0800
+@@ -1,284 +0,0 @@
+-# This Source Code Form is subject to the terms of the Mozilla Public
+-# License, v. 2.0. If a copy of the MPL was not distributed with this
+-# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+-
+-# Adding a new metric? We have docs for that!
+-# https://firefox-source-docs.mozilla.org/toolkit/components/glean/user/new_definitions_file.html
+-
+----
+-$schema: moz://mozilla.org/schemas/glean/metrics/2-0-0
+-$tags:
+-  - "Core :: Machine Learning"
+-
+-genai.chatbot:
+-  enabled:
+-    type: boolean
+-    lifetime: application
+-    description: >
+-      Indicates if the chatbot feature is enabled.
+-    bugs:
+-      - https://bugzilla.mozilla.org/show_bug.cgi?id=1895813
+-    data_reviews:
+-      - https://phabricator.services.mozilla.com/D214470
+-    data_sensitivity:
+-      - interaction
+-    expires: 134
+-    notification_emails:
+-      - elee@mozilla.com
+-    send_in_pings:
+-      - metrics
+-
+-  provider:
+-    type: string
+-    lifetime: application
+-    description: >
+-      Indicates id of activated chatbot provider or "custom" or "none"
+-    bugs:
+-      - https://bugzilla.mozilla.org/show_bug.cgi?id=1895813
+-    data_reviews:
+-      - https://phabricator.services.mozilla.com/D214470
+-    data_sensitivity:
+-      - interaction
+-    expires: 134
+-    notification_emails:
+-      - elee@mozilla.com
+-    send_in_pings:
+-      - metrics
+-
+-  shortcuts:
+-    type: boolean
+-    lifetime: application
+-    description: >
+-      Indicates if the chatbot feature would show shortcuts on selection.
+-    bugs:
+-      - https://bugzilla.mozilla.org/show_bug.cgi?id=1910005
+-    data_reviews:
+-      - https://phabricator.services.mozilla.com/D217782
+-    data_sensitivity:
+-      - interaction
+-    expires: 134
+-    notification_emails:
+-      - elee@mozilla.com
+-    send_in_pings:
+-      - metrics
+-
+-  shortcuts_custom:
+-    type: boolean
+-    lifetime: application
+-    description: >
+-      Indicates if the chatbot feature would show shortcuts custom input.
+-    bugs:
+-      - https://bugzilla.mozilla.org/show_bug.cgi?id=1910005
+-    data_reviews:
+-      - https://phabricator.services.mozilla.com/D217782
+-    data_sensitivity:
+-      - interaction
+-    expires: 134
+-    notification_emails:
+-      - elee@mozilla.com
+-    send_in_pings:
+-      - metrics
+-
+-  sidebar:
+-    type: boolean
+-    lifetime: application
+-    description: >
+-      Indicates if the chatbot feature would open in sidebar.
+-    bugs:
+-      - https://bugzilla.mozilla.org/show_bug.cgi?id=1895813
+-    data_reviews:
+-      - https://phabricator.services.mozilla.com/D214470
+-    data_sensitivity:
+-      - interaction
+-    expires: 134
+-    notification_emails:
+-      - elee@mozilla.com
+-    send_in_pings:
+-      - metrics
+-
+-  experiment_checkbox_click:
+-    type: event
+-    description: >
+-      Chatbot experiment checkbox was clicked to enable/disable.
+-    bugs:
+-      - https://bugzilla.mozilla.org/show_bug.cgi?id=1895813
+-    data_reviews:
+-      - https://phabricator.services.mozilla.com/D214470
+-    data_sensitivity:
+-      - interaction
+-    expires: 134
+-    notification_emails:
+-      - elee@mozilla.com
+-    send_in_pings:
+-      - events
+-    extra_keys:
+-      enabled:
+-        type: boolean
+-        description: New/current state is enabled.
+-
+-  provider_change:
+-    type: event
+-    description: >
+-      Chatbot provider UI changed providers.
+-    bugs:
+-      - https://bugzilla.mozilla.org/show_bug.cgi?id=1895813
+-    data_reviews:
+-      - https://phabricator.services.mozilla.com/D214470
+-    data_sensitivity:
+-      - interaction
+-    expires: 134
+-    notification_emails:
+-      - elee@mozilla.com
+-    send_in_pings:
+-      - events
+-    extra_keys:
+-      current:
+-        type: string
+-        description: Current provider id.
+-      previous:
+-        type: string
+-        description: Previous provider id.
+-      surface:
+-        type: string
+-        description: Which UI surface.
+-
+-  shortcuts_checkbox_click:
+-    type: event
+-    description: >
+-      Chatbot shortcuts checkbox was clicked to enable/disable.
+-    bugs:
+-      - https://bugzilla.mozilla.org/show_bug.cgi?id=1910005
+-    data_reviews:
+-      - https://phabricator.services.mozilla.com/D217782
+-    data_sensitivity:
+-      - interaction
+-    expires: 134
+-    notification_emails:
+-      - elee@mozilla.com
+-    send_in_pings:
+-      - events
+-    extra_keys:
+-      enabled:
+-        type: boolean
+-        description: New/current state is enabled.
+-
+-  contextmenu_prompt_click:
+-    type: event
+-    description: >
+-      Chatbot prompt was clicked from the context menu.
+-    bugs:
+-      - https://bugzilla.mozilla.org/show_bug.cgi?id=1895813
+-    data_reviews:
+-      - https://phabricator.services.mozilla.com/D214470
+-    data_sensitivity:
+-      - interaction
+-    expires: 134
+-    notification_emails:
+-      - elee@mozilla.com
+-    send_in_pings:
+-      - events
+-    extra_keys:
+-      prompt:
+-        type: string
+-        description: Selected prompt id.
+-      provider:
+-        type: string
+-        description: Selected provider id.
+-      selection:
+-        type: quantity
+-        description: Selected text length.
+-
+-  shortcuts_displayed:
+-    type: event
+-    description: >
+-      Shortcuts displayed on text selection.
+-    bugs:
+-      - https://bugzilla.mozilla.org/show_bug.cgi?id=1910005
+-    data_reviews:
+-      - https://phabricator.services.mozilla.com/D217782
+-    data_sensitivity:
+-      - interaction
+-    expires: 134
+-    notification_emails:
+-      - elee@mozilla.com
+-    send_in_pings:
+-      - events
+-    extra_keys:
+-      delay:
+-        type: quantity
+-        description: Milliseconds from mousedown to showing.
+-      selection:
+-        type: quantity
+-        description: Selected text length.
+-
+-  shortcuts_expanded:
+-    type: event
+-    description: >
+-      Shortcuts expanded to show prompts.
+-    bugs:
+-      - https://bugzilla.mozilla.org/show_bug.cgi?id=1910005
+-    data_reviews:
+-      - https://phabricator.services.mozilla.com/D217782
+-    data_sensitivity:
+-      - interaction
+-    expires: 134
+-    notification_emails:
+-      - elee@mozilla.com
+-    send_in_pings:
+-      - events
+-    extra_keys:
+-      selection:
+-        type: quantity
+-        description: Selected text length.
+-
+-  shortcuts_prompt_click:
+-    type: event
+-    description: >
+-      Chatbot prompt was clicked from the shortcuts.
+-    bugs:
+-      - https://bugzilla.mozilla.org/show_bug.cgi?id=1910005
+-    data_reviews:
+-      - https://phabricator.services.mozilla.com/D217782
+-    data_sensitivity:
+-      - interaction
+-    expires: 134
+-    notification_emails:
+-      - elee@mozilla.com
+-    send_in_pings:
+-      - events
+-    extra_keys:
+-      prompt:
+-        type: string
+-        description: Selected prompt id.
+-      provider:
+-        type: string
+-        description: Selected provider id.
+-      selection:
+-        type: quantity
+-        description: Selected text length.
+-
+-  sidebar_toggle:
+-    type: event
+-    description: >
+-      Chatbot sidebar panel was toggled open/close.
+-    bugs:
+-      - https://bugzilla.mozilla.org/show_bug.cgi?id=1895813
+-    data_reviews:
+-      - https://phabricator.services.mozilla.com/D214470
+-    data_sensitivity:
+-      - interaction
+-    expires: 134
+-    notification_emails:
+-      - elee@mozilla.com
+-    send_in_pings:
+-      - events
+-    extra_keys:
+-      opened:
+-        type: boolean
+-        description: New/current state of sidebar is open.
+-      provider:
+-        type: string
+-        description: Selected provider id.
+-      reason:
+-        type: string
+-        description: Why panel is toggling.
+diff -x .svn -x .git -urN firefox-130.0.orig/browser/components/genai/moz.build firefox-130.0/browser/components/genai/moz.build
+--- firefox-130.0.orig/browser/components/genai/moz.build	2024-09-07 17:26:31.982890064 -0700
++++ firefox-130.0/browser/components/genai/moz.build	1969-12-31 16:00:00.000000000 -0800
+@@ -1,21 +0,0 @@
+-# This Source Code Form is subject to the terms of the Mozilla Public
+-# License, v. 2.0. If a copy of the MPL was not distributed with this
+-# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+-
+-BROWSER_CHROME_MANIFESTS += ["tests/browser/browser.toml"]
+-
+-with Files("**"):
+-    BUG_COMPONENT = ("Core", "Machine Learning")
+-
+-EXTRA_JS_MODULES += [
+-    "GenAI.sys.mjs",
+-]
+-
+-FINAL_TARGET_FILES.actors += [
+-    "GenAIChild.sys.mjs",
+-    "GenAIParent.sys.mjs",
+-]
+-
+-JAR_MANIFESTS += ["jar.mn"]
+-
+-XPCSHELL_TESTS_MANIFESTS += ["tests/xpcshell/xpcshell.toml"]
+diff -x .svn -x .git -urN firefox-130.0.orig/browser/components/genai/tests/browser/browser_chat_contextmenu.js firefox-130.0/browser/components/genai/tests/browser/browser_chat_contextmenu.js
+--- firefox-130.0.orig/browser/components/genai/tests/browser/browser_chat_contextmenu.js	2024-09-07 17:26:31.982890064 -0700
++++ firefox-130.0/browser/components/genai/tests/browser/browser_chat_contextmenu.js	1969-12-31 16:00:00.000000000 -0800
+@@ -1,133 +0,0 @@
+-/* Any copyright is dedicated to the Public Domain.
+- * http://creativecommons.org/publicdomain/zero/1.0/ */
+-
+-// Bug 1895789 to standarize contextmenu helpers in BrowserTestUtils
+-async function openContextMenu() {
+-  const contextMenu = document.getElementById("contentAreaContextMenu");
+-  const promise = BrowserTestUtils.waitForEvent(contextMenu, "popupshown");
+-  await BrowserTestUtils.synthesizeMouse(
+-    null,
+-    0,
+-    0,
+-    { type: "contextmenu" },
+-    gBrowser.selectedBrowser
+-  );
+-  await promise;
+-}
+-
+-async function hideContextMenu() {
+-  const contextMenu = document.getElementById("contentAreaContextMenu");
+-  const promise = BrowserTestUtils.waitForEvent(contextMenu, "popuphidden");
+-  contextMenu.hidePopup();
+-  await promise;
+-}
+-
+-/**
+- * Check that the chat context menu is hidden by default
+- */
+-add_task(async function test_hidden_menu() {
+-  await BrowserTestUtils.withNewTab("about:blank", async () => {
+-    await openContextMenu();
+-    Assert.ok(
+-      document.getElementById("context-ask-chat").hidden,
+-      "Ask chat menu is hidden"
+-    );
+-    await hideContextMenu();
+-  });
+-});
+-
+-/**
+- * Check that chat context menu is shown with appropriate prefs set
+- */
+-add_task(async function test_menu_enabled() {
+-  await SpecialPowers.pushPrefEnv({
+-    set: [["browser.ml.chat.provider", "http://localhost:8080"]],
+-  });
+-  await BrowserTestUtils.withNewTab("about:blank", async () => {
+-    await openContextMenu();
+-    Assert.ok(
+-      !document.getElementById("context-ask-chat").hidden,
+-      "Ask chat menu is shown"
+-    );
+-    await hideContextMenu();
+-  });
+-});
+-
+-/**
+- * Check tab behavior of chat menu items without sidebar pref
+- */
+-add_task(async function test_open_tab() {
+-  await SpecialPowers.pushPrefEnv({
+-    set: [
+-      ["browser.ml.chat.provider", "http://localhost:8080"],
+-      ["browser.ml.chat.sidebar", false],
+-    ],
+-  });
+-  await BrowserTestUtils.withNewTab("about:blank", async () => {
+-    const origTabs = gBrowser.tabs.length;
+-    await openContextMenu();
+-    await BrowserTestUtils.switchTab(gBrowser, () =>
+-      document.getElementById("context-ask-chat").getItemAtIndex(0).click()
+-    );
+-    await hideContextMenu();
+-
+-    Assert.equal(gBrowser.tabs.length, origTabs + 1, "Chat opened tabs");
+-    Assert.ok(!SidebarController.isOpen, "Chat did not open sidebar");
+-    gBrowser.removeTab(gBrowser.selectedTab);
+-  });
+-});
+-
+-/**
+- * Check sidebar behavior of chat menu items with sidebar pref
+- */
+-add_task(async function test_open_sidebar() {
+-  Services.fog.testResetFOG();
+-  await SpecialPowers.pushPrefEnv({
+-    set: [
+-      ["browser.ml.chat.provider", "http://localhost:8080"],
+-      ["browser.ml.chat.sidebar", true],
+-    ],
+-  });
+-  await BrowserTestUtils.withNewTab("about:blank", async () => {
+-    const origTabs = gBrowser.tabs.length;
+-    await openContextMenu();
+-    document.getElementById("context-ask-chat").getItemAtIndex(0).click();
+-    await hideContextMenu();
+-
+-    Assert.equal(gBrowser.tabs.length, origTabs, "Chat did not open tab");
+-    Assert.ok(SidebarController.isOpen, "Chat opened sidebar");
+-    SidebarController.hide();
+-  });
+-
+-  const events = Glean.genaiChatbot.contextmenuPromptClick.testGetValue();
+-  Assert.equal(events.length, 1, "One context menu click");
+-  Assert.equal(events[0].extra.prompt, "summarize", "Picked summarize");
+-  Assert.equal(events[0].extra.provider, "localhost", "With localhost");
+-  Assert.equal(events[0].extra.selection, "0", "No selection");
+-});
+-
+-/**
+- * Check modified prompts record as custom
+- */
+-add_task(async function test_custom_prompt() {
+-  Services.fog.testResetFOG();
+-  await SpecialPowers.pushPrefEnv({
+-    set: [
+-      ["browser.ml.chat.prompts.0", JSON.stringify({ id: "prompt" })],
+-      ["browser.ml.chat.provider", "http://localhost:8080"],
+-      ["browser.ml.chat.sidebar", true],
+-    ],
+-  });
+-  await BrowserTestUtils.withNewTab("about:blank", async () => {
+-    await openContextMenu();
+-    document.getElementById("context-ask-chat").getItemAtIndex(0).click();
+-    await hideContextMenu();
+-    SidebarController.hide();
+-  });
+-
+-  Assert.equal(
+-    Glean.genaiChatbot.contextmenuPromptClick.testGetValue()[0].extra.prompt,
+-    "custom",
+-    "Custom id replaced with 'custom'"
+-  );
+-});
+diff -x .svn -x .git -urN firefox-130.0.orig/browser/components/genai/tests/browser/browser_chat_nimbus.js firefox-130.0/browser/components/genai/tests/browser/browser_chat_nimbus.js
+--- firefox-130.0.orig/browser/components/genai/tests/browser/browser_chat_nimbus.js	2024-09-07 17:26:31.982890064 -0700
++++ firefox-130.0/browser/components/genai/tests/browser/browser_chat_nimbus.js	1969-12-31 16:00:00.000000000 -0800
+@@ -1,113 +0,0 @@
+-/* Any copyright is dedicated to the Public Domain.
+- * http://creativecommons.org/publicdomain/zero/1.0/ */
+-
+-const { ExperimentFakes } = ChromeUtils.importESModule(
+-  "resource://testing-common/NimbusTestUtils.sys.mjs"
+-);
+-
+-/**
+- * Check that enrolling into chatbot experiments sets user prefs
+- */
+-add_task(async function test_nimbus_user_prefs() {
+-  const foo = "browser.ml.chat.foo";
+-  const nimbus = "browser.ml.chat.nimbus";
+-  const sidebar = "browser.ml.chat.sidebar";
+-  Assert.ok(!Services.prefs.prefHasUserValue(foo), "No user foo pref yet");
+-  Assert.ok(
+-    !Services.prefs.prefHasUserValue(nimbus),
+-    "No user nimbus pref yet"
+-  );
+-
+-  let cleanup = await ExperimentFakes.enrollWithFeatureConfig({
+-    featureId: "chatbot",
+-    value: {
+-      prefs: {
+-        foo: { value: "bar" },
+-      },
+-    },
+-  });
+-
+-  Assert.equal(
+-    Services.prefs.getStringPref(foo),
+-    "bar",
+-    "Set user pref with experiment"
+-  );
+-  Assert.ok(Services.prefs.prefHasUserValue(foo), "foo pref has user value");
+-  const nimbusValue = Services.prefs.getStringPref(nimbus);
+-  Assert.ok(nimbusValue, "Set some nimbus slug");
+-  Assert.ok(
+-    Services.prefs.prefHasUserValue(nimbus),
+-    "nimbus pref has user value"
+-  );
+-
+-  cleanup();
+-
+-  Assert.equal(Services.prefs.getStringPref(foo), "bar", "foo pref still set");
+-  Assert.equal(
+-    Services.prefs.getStringPref(nimbus),
+-    nimbusValue,
+-    "nimbus pref still set"
+-  );
+-  Assert.ok(Services.prefs.getBoolPref(sidebar), "sidebar is default value");
+-  Assert.ok(
+-    !Services.prefs.prefHasUserValue(sidebar),
+-    "sidebar used default value"
+-  );
+-
+-  cleanup = await ExperimentFakes.enrollWithFeatureConfig({
+-    featureId: "chatbot",
+-    value: {
+-      prefs: {
+-        foo: {},
+-        sidebar: { value: false },
+-      },
+-    },
+-  });
+-
+-  Assert.ok(!Services.prefs.prefHasUserValue(foo), "foo pref no longer set");
+-  Assert.notEqual(
+-    Services.prefs.getStringPref(nimbus),
+-    nimbusValue,
+-    "nimbus pref changed"
+-  );
+-  Assert.ok(!Services.prefs.getBoolPref(sidebar), "sidebar set to false");
+-  Assert.ok(
+-    Services.prefs.prefHasUserValue(sidebar),
+-    "sidebar pref has user value"
+-  );
+-
+-  cleanup();
+-  Services.prefs.clearUserPref(nimbus);
+-  Services.prefs.clearUserPref(sidebar);
+-});
+-
+-/**
+- * Check that enrolling into chatbot experiments sets default prefs
+- */
+-add_task(async function test_nimbus_default_prefs() {
+-  const pref = "browser.ml.chat.sidebar";
+-  Assert.ok(Services.prefs.getBoolPref(pref), "sidebar is default value");
+-  Assert.ok(
+-    !Services.prefs.prefHasUserValue(pref),
+-    "sidebar used default value"
+-  );
+-
+-  const cleanup = await ExperimentFakes.enrollWithFeatureConfig({
+-    featureId: "chatbot",
+-    value: {
+-      prefs: {
+-        sidebar: { branch: "default", value: false },
+-      },
+-    },
+-  });
+-
+-  Assert.ok(!Services.prefs.getBoolPref(pref), "sidebar set to false");
+-  Assert.ok(
+-    !Services.prefs.prefHasUserValue(pref),
+-    "sidebar still is default value"
+-  );
+-
+-  cleanup();
+-  Services.prefs.clearUserPref("browser.ml.chat.nimbus");
+-  Services.prefs.getDefaultBranch("").setBoolPref(pref, true);
+-});
+diff -x .svn -x .git -urN firefox-130.0.orig/browser/components/genai/tests/browser/browser_chat_request.js firefox-130.0/browser/components/genai/tests/browser/browser_chat_request.js
+--- firefox-130.0.orig/browser/components/genai/tests/browser/browser_chat_request.js	2024-09-07 17:26:31.982890064 -0700
++++ firefox-130.0/browser/components/genai/tests/browser/browser_chat_request.js	1969-12-31 16:00:00.000000000 -0800
+@@ -1,50 +0,0 @@
+-/* Any copyright is dedicated to the Public Domain.
+- * http://creativecommons.org/publicdomain/zero/1.0/ */
+-
+-const { GenAI } = ChromeUtils.importESModule(
+-  "resource:///modules/GenAI.sys.mjs"
+-);
+-const { HttpServer } = ChromeUtils.importESModule(
+-  "resource://testing-common/httpd.sys.mjs"
+-);
+-const { sinon } = ChromeUtils.importESModule(
+-  "resource://testing-common/Sinon.sys.mjs"
+-);
+-
+-/**
+- * Check that prompts can be sent with header
+- */
+-add_task(async function test_chat_header() {
+-  const server = new HttpServer();
+-  const requestPromise = new Promise(resolve => {
+-    server.registerPathHandler("/", resolve);
+-  });
+-  server.start(-1);
+-  const url = `http://localhost:${server.identity.primaryPort}`;
+-
+-  const sandbox = sinon.createSandbox();
+-  sandbox
+-    .stub(GenAI, "chatProviders")
+-    .value(new Map([[url, { header: "X-Prompt" }]]));
+-
+-  await SpecialPowers.pushPrefEnv({
+-    set: [
+-      ["browser.ml.chat.provider", url],
+-      ["browser.ml.chat.prompt.prefix", ""],
+-      ["browser.ml.chat.sidebar", false],
+-    ],
+-  });
+-
+-  await GenAI.handleAskChat({ value: "hello world?" }, { window });
+-  const request = await requestPromise;
+-  Assert.equal(
+-    request.getHeader("x-prompt"),
+-    "hello%20world%3F",
+-    "Prompt passed via header"
+-  );
+-  Assert.equal(request.queryString, "", "Prompt not passed via ?q");
+-
+-  gBrowser.removeTab(gBrowser.selectedTab);
+-  sandbox.restore();
+-  server.stop();
+-});
+diff -x .svn -x .git -urN firefox-130.0.orig/browser/components/genai/tests/browser/browser_chat_shortcuts.js firefox-130.0/browser/components/genai/tests/browser/browser_chat_shortcuts.js
+--- firefox-130.0.orig/browser/components/genai/tests/browser/browser_chat_shortcuts.js	2024-09-07 17:26:31.982890064 -0700
++++ firefox-130.0/browser/components/genai/tests/browser/browser_chat_shortcuts.js	1969-12-31 16:00:00.000000000 -0800
+@@ -1,121 +0,0 @@
+-/* Any copyright is dedicated to the Public Domain.
+- * http://creativecommons.org/publicdomain/zero/1.0/ */
+-
+-const { GenAI } = ChromeUtils.importESModule(
+-  "resource:///modules/GenAI.sys.mjs"
+-);
+-const { sinon } = ChromeUtils.importESModule(
+-  "resource://testing-common/Sinon.sys.mjs"
+-);
+-
+-/**
+- * Check that shortcuts aren't shown by default
+- */
+-add_task(async function test_no_shortcuts() {
+-  await SpecialPowers.pushPrefEnv({
+-    set: [["browser.ml.chat.provider", "http://localhost:8080"]],
+-  });
+-  await BrowserTestUtils.withNewTab("data:text/plain,hi", async browser => {
+-    browser.focus();
+-    goDoCommand("cmd_selectAll");
+-    Assert.ok(
+-      !document.querySelector(".content-shortcuts"),
+-      "No shortcuts found"
+-    );
+-  });
+-});
+-
+-/**
+- * Check that shortcuts get shown on selection and open popup and sidebar
+- */
+-add_task(async function test_show_shortcuts() {
+-  Services.fog.testResetFOG();
+-  await SpecialPowers.pushPrefEnv({
+-    set: [["browser.ml.chat.shortcuts", true]],
+-  });
+-  await BrowserTestUtils.withNewTab("data:text/plain,hi", async browser => {
+-    await SimpleTest.promiseFocus(browser);
+-    const selectPromise = SpecialPowers.spawn(browser, [], () => {
+-      ContentTaskUtils.waitForCondition(() => content.getSelection());
+-    });
+-    goDoCommand("cmd_selectAll");
+-    await selectPromise;
+-    BrowserTestUtils.synthesizeMouseAtCenter(
+-      browser,
+-      { type: "mouseup" },
+-      browser
+-    );
+-    const shortcuts = await TestUtils.waitForCondition(() =>
+-      document.querySelector(".content-shortcuts[shown]")
+-    );
+-    Assert.ok(shortcuts, "Shortcuts added on select");
+-    let events = Glean.genaiChatbot.shortcutsDisplayed.testGetValue();
+-    Assert.equal(events.length, 1, "Shortcuts shown once");
+-    Assert.ok(events[0].extra.delay, "Waited some time");
+-    Assert.equal(events[0].extra.selection, 2, "Selected hi");
+-
+-    const popup = document.getElementById("ask-chat-shortcuts");
+-    Assert.equal(popup.state, "closed", "Popup is closed");
+-
+-    EventUtils.sendMouseEvent({ type: "mouseover" }, shortcuts);
+-    await BrowserTestUtils.waitForEvent(popup, "popupshown");
+-
+-    Assert.equal(popup.state, "open", "Popup is open");
+-    events = Glean.genaiChatbot.shortcutsExpanded.testGetValue();
+-    Assert.equal(events.length, 1, "One shortcuts opened");
+-    Assert.equal(events[0].extra.selection, 2, "Selected hi");
+-
+-    Assert.ok(!SidebarController.isOpen, "Sidebar is closed");
+-    popup.querySelector("toolbarbutton").click();
+-    const isOpen = await TestUtils.waitForCondition(
+-      () => SidebarController.isOpen
+-    );
+-
+-    Assert.ok(isOpen, "Chat opened sidebar");
+-    events = Glean.genaiChatbot.shortcutsPromptClick.testGetValue();
+-    Assert.equal(events.length, 1, "One shortcut clicked");
+-    Assert.equal(events[0].extra.prompt, "summarize", "Picked summarize");
+-    Assert.equal(events[0].extra.provider, "localhost", "With localhost");
+-    Assert.equal(events[0].extra.selection, 2, "Selected hi");
+-
+-    SidebarController.hide();
+-  });
+-});
+-
+-/**
+- * Check that only plain clicks would show shortcuts
+- */
+-add_task(async function test_plain_clicks() {
+-  const sandbox = sinon.createSandbox();
+-  const stub = sandbox
+-    .stub(GenAI, "handleShortcutsMessage")
+-    .withArgs("GenAI:ShowShortcuts");
+-
+-  await BrowserTestUtils.withNewTab("data:text/plain,click", async browser => {
+-    await BrowserTestUtils.synthesizeMouseAtCenter(
+-      browser,
+-      { type: "mouseup" },
+-      browser
+-    );
+-
+-    Assert.equal(stub.callCount, 1, "Plain click handled");
+-
+-    await BrowserTestUtils.synthesizeMouseAtCenter(
+-      browser,
+-      { button: 1, type: "mouseup" },
+-      browser
+-    );
+-
+-    Assert.equal(stub.callCount, 1, "Middle click ignored");
+-
+-    await BrowserTestUtils.synthesizeMouseAtCenter(
+-      browser,
+-      { shiftKey: true, type: "mouseup" },
+-      browser
+-    );
+-
+-    Assert.equal(stub.callCount, 1, "Modified click ignored");
+-  });
+-
+-  sandbox.restore();
+-});
+diff -x .svn -x .git -urN firefox-130.0.orig/browser/components/genai/tests/browser/browser_chat_sidebar.js firefox-130.0/browser/components/genai/tests/browser/browser_chat_sidebar.js
+--- firefox-130.0.orig/browser/components/genai/tests/browser/browser_chat_sidebar.js	2024-09-07 17:26:31.982890064 -0700
++++ firefox-130.0/browser/components/genai/tests/browser/browser_chat_sidebar.js	1969-12-31 16:00:00.000000000 -0800
+@@ -1,53 +0,0 @@
+-/* Any copyright is dedicated to the Public Domain.
+- * http://creativecommons.org/publicdomain/zero/1.0/ */
+-
+-/**
+- * Check that chat sidebar renders
+- */
+-add_task(async function test_sidebar_render() {
+-  await SpecialPowers.pushPrefEnv({
+-    set: [["browser.ml.chat.provider", "http://mochi.test:8888"]],
+-  });
+-
+-  await SidebarController.show("viewGenaiChatSidebar");
+-
+-  const provider =
+-    SidebarController.browser.contentWindow.document.getElementById("provider");
+-  Assert.ok(provider, "Rendered provider select");
+-
+-  SidebarController.hide();
+-});
+-
+-/**
+- * Check that chat sidebar renders providers
+- */
+-add_task(async function test_sidebar_providers() {
+-  const countVisible = () =>
+-    [
+-      ...SidebarController.browser.contentWindow.document.getElementById(
+-        "provider"
+-      ).options,
+-    ].filter(option => !option.hidden).length;
+-
+-  await SpecialPowers.pushPrefEnv({
+-    set: [["browser.ml.chat.provider", ""]],
+-  });
+-  await SidebarController.show("viewGenaiChatSidebar");
+-
+-  const origCount = countVisible();
+-  Assert.equal(
+-    origCount,
+-    6,
+-    "Rendered expected number of provider options (5 + custom)"
+-  );
+-
+-  SidebarController.hide();
+-  await SpecialPowers.pushPrefEnv({
+-    set: [["browser.ml.chat.hideLocalhost", false]],
+-  });
+-  await SidebarController.show("viewGenaiChatSidebar");
+-
+-  Assert.equal(countVisible(), origCount + 1, "Added localhost option");
+-
+-  SidebarController.hide();
+-});
+diff -x .svn -x .git -urN firefox-130.0.orig/browser/components/genai/tests/browser/browser_chat_telemetry.js firefox-130.0/browser/components/genai/tests/browser/browser_chat_telemetry.js
+--- firefox-130.0.orig/browser/components/genai/tests/browser/browser_chat_telemetry.js	2024-09-07 17:26:31.982890064 -0700
++++ firefox-130.0/browser/components/genai/tests/browser/browser_chat_telemetry.js	1969-12-31 16:00:00.000000000 -0800
+@@ -1,106 +0,0 @@
+-/* Any copyright is dedicated to the Public Domain.
+- * http://creativecommons.org/publicdomain/zero/1.0/ */
+-
+-/**
+- * Check that chat set default telemetry
+- */
+-add_task(async function test_default_telemetry() {
+-  // These metrics rely on startup init, which is skipped in repeat verify
+-  Assert.equal(
+-    Glean.genaiChatbot.enabled.testGetValue() ?? true,
+-    true,
+-    "Default enabled for test"
+-  );
+-  Assert.equal(
+-    Glean.genaiChatbot.provider.testGetValue() ?? "none",
+-    "none",
+-    "Default no provider for test"
+-  );
+-  Assert.equal(
+-    Glean.genaiChatbot.shortcuts.testGetValue() ?? true,
+-    true,
+-    "Default shortcuts for test"
+-  );
+-  Assert.equal(
+-    Glean.genaiChatbot.shortcutsCustom.testGetValue() ??
+-      AppConstants.NIGHTLY_BUILD,
+-    AppConstants.NIGHTLY_BUILD,
+-    "Default shortcuts_custom for test"
+-  );
+-  Assert.equal(
+-    Glean.genaiChatbot.sidebar.testGetValue() ?? true,
+-    true,
+-    "Default sidebar for test"
+-  );
+-
+-  Services.fog.testResetFOG();
+-  await SidebarController.show("viewGenaiChatSidebar");
+-  SidebarController.hide();
+-
+-  const events = Glean.genaiChatbot.sidebarToggle.testGetValue();
+-  Assert.equal(events.length, 2, "Sidebar toggled twice");
+-  Assert.equal(events[0].extra.opened, "true", "First opened");
+-  Assert.equal(events[0].extra.provider, "none", "No provider");
+-  Assert.equal(events[0].extra.reason, "load", "Page loaded");
+-  Assert.equal(events[1].extra.opened, "false", "Second not opened");
+-  Assert.equal(events[1].extra.provider, "none", "Still no provider");
+-  Assert.equal(events[1].extra.reason, "unload", "Page unloaded");
+-
+-  Assert.equal(
+-    Glean.genaiChatbot.experimentCheckboxClick.testGetValue(),
+-    null,
+-    "No experiment events"
+-  );
+-  Assert.equal(
+-    Glean.genaiChatbot.providerChange.testGetValue(),
+-    null,
+-    "No provider change events"
+-  );
+-  Assert.equal(
+-    Glean.genaiChatbot.contextmenuPromptClick.testGetValue(),
+-    null,
+-    "No context menu events"
+-  );
+-});
+-
+-/**
+- * Check that telemetry detects changes
+- */
+-add_task(async function test_telemetry_change() {
+-  await SpecialPowers.pushPrefEnv({
+-    set: [
+-      ["browser.ml.chat.hideLocalhost", false],
+-      ["browser.ml.chat.provider", "http://mochi.test:8888"],
+-    ],
+-  });
+-  await SidebarController.show("viewGenaiChatSidebar");
+-  SidebarController.browser.focus();
+-  await SpecialPowers.pushPrefEnv({
+-    set: [["browser.ml.chat.provider", "http://localhost:8080"]],
+-  });
+-
+-  Assert.equal(
+-    Glean.genaiChatbot.provider.testGetValue(),
+-    "localhost",
+-    "Metric switched to localhost"
+-  );
+-
+-  await SpecialPowers.pushPrefEnv({
+-    set: [["browser.ml.chat.provider", ""]],
+-  });
+-  SidebarController.hide();
+-
+-  Assert.equal(
+-    Glean.genaiChatbot.provider.testGetValue(),
+-    "none",
+-    "Metric switched to none"
+-  );
+-  const events = Glean.genaiChatbot.providerChange.testGetValue();
+-  Assert.equal(events.length, 2, "Two provider change");
+-  Assert.equal(events[0].extra.previous, "custom", "From custom");
+-  Assert.equal(events[0].extra.current, "localhost", "To localhost");
+-  Assert.equal(events[0].extra.surface, "panel", "Using sidebar panel");
+-  Assert.equal(events[1].extra.previous, "localhost", "From localhost");
+-  Assert.equal(events[1].extra.current, "none", "To none");
+-  Assert.equal(events[1].extra.surface, "panel", "Using sidebar panel");
+-});
+diff -x .svn -x .git -urN firefox-130.0.orig/browser/components/genai/tests/browser/browser_genai_actors.js firefox-130.0/browser/components/genai/tests/browser/browser_genai_actors.js
+--- firefox-130.0.orig/browser/components/genai/tests/browser/browser_genai_actors.js	2024-09-07 17:26:31.982890064 -0700
++++ firefox-130.0/browser/components/genai/tests/browser/browser_genai_actors.js	1969-12-31 16:00:00.000000000 -0800
+@@ -1,33 +0,0 @@
+-/* Any copyright is dedicated to the Public Domain.
+- * http://creativecommons.org/publicdomain/zero/1.0/ */
+-
+-/**
+- * Check that actor gets added when enabled
+- */
+-add_task(async function test_got_actor() {
+-  await SpecialPowers.pushPrefEnv({
+-    set: [["browser.ml.chat.provider", "http://localhost:8080"]],
+-  });
+-  await BrowserTestUtils.withNewTab("about:blank", async browser => {
+-    Assert.ok(
+-      browser.browsingContext.currentWindowContext.getActor("GenAI"),
+-      "Got the actor"
+-    );
+-  });
+-});
+-
+-/**
+- * Check that actor not found when disabled
+- */
+-add_task(async function test_actor_disabled() {
+-  await SpecialPowers.pushPrefEnv({
+-    set: [["browser.ml.chat.enabled", false]],
+-  });
+-  await BrowserTestUtils.withNewTab("about:blank", async browser => {
+-    Assert.throws(
+-      () => browser.browsingContext.currentWindowContext.getActor("GenAI"),
+-      /NotFoundError/,
+-      "Actor disabled"
+-    );
+-  });
+-});
+diff -x .svn -x .git -urN firefox-130.0.orig/browser/components/genai/tests/browser/browser_genai_init.js firefox-130.0/browser/components/genai/tests/browser/browser_genai_init.js
+--- firefox-130.0.orig/browser/components/genai/tests/browser/browser_genai_init.js	2024-09-07 17:26:31.982890064 -0700
++++ firefox-130.0/browser/components/genai/tests/browser/browser_genai_init.js	1969-12-31 16:00:00.000000000 -0800
+@@ -1,70 +0,0 @@
+-/* Any copyright is dedicated to the Public Domain.
+- * http://creativecommons.org/publicdomain/zero/1.0/ */
+-
+-const { GenAI } = ChromeUtils.importESModule(
+-  "resource:///modules/GenAI.sys.mjs"
+-);
+-const { sinon } = ChromeUtils.importESModule(
+-  "resource://testing-common/Sinon.sys.mjs"
+-);
+-
+-/**
+- * Check that chat sidebar auto opens
+- */
+-add_task(async function test_chat_autoopen() {
+-  await SpecialPowers.pushPrefEnv({
+-    set: [
+-      ["browser.ml.chat.openSidebarOnProviderChange", true],
+-      ["browser.ml.chat.provider", "http://localhost:8080"],
+-    ],
+-  });
+-
+-  Assert.ok(SidebarController.isOpen, "Pref change opened sidebar");
+-  SidebarController.hide();
+-});
+-
+-/**
+- * Check that chat sidebar auto closes
+- */
+-add_task(async function test_chat_autoclose() {
+-  SidebarController.show("viewGenaiChatSidebar");
+-
+-  await SpecialPowers.pushPrefEnv({
+-    set: [["browser.ml.chat.enabled", false]],
+-  });
+-
+-  Assert.ok(!SidebarController.isOpen, "Pref change closed sidebar");
+-});
+-
+-/**
+- * Check that chat sidebar doesn't open if disabled
+- */
+-add_task(async function test_chat_no_open() {
+-  await SpecialPowers.pushPrefEnv({
+-    set: [
+-      ["browser.ml.chat.openSidebarOnProviderChange", false],
+-      ["browser.ml.chat.provider", "http://localhost:8080"],
+-    ],
+-  });
+-
+-  Assert.ok(!SidebarController.isOpen, "Pref changes didn't open sidebar");
+-});
+-
+-/**
+- * Check that about:preferences is detected
+- */
+-add_task(async function test_preferences_observer() {
+-  const sandbox = sinon.createSandbox();
+-  const stub = sandbox.stub(GenAI, "buildPreferences");
+-
+-  await BrowserTestUtils.withNewTab("about:preferences#experimental", () => {
+-    Assert.equal(stub.callCount, 1, "Would have built genai preferences");
+-
+-    GenAI.init();
+-
+-    Assert.equal(stub.callCount, 2, "Would have handled existing tab");
+-  });
+-
+-  GenAI.uninit();
+-  sandbox.restore();
+-});
+diff -x .svn -x .git -urN firefox-130.0.orig/browser/components/genai/tests/browser/browser.toml firefox-130.0/browser/components/genai/tests/browser/browser.toml
+--- firefox-130.0.orig/browser/components/genai/tests/browser/browser.toml	2024-09-07 17:26:31.982890064 -0700
++++ firefox-130.0/browser/components/genai/tests/browser/browser.toml	1969-12-31 16:00:00.000000000 -0800
+@@ -1,15 +0,0 @@
+-[DEFAULT]
+-prefs = [
+-  "browser.ml.chat.enabled=true",
+-  "browser.ml.chat.openSidebarOnProviderChange=false",
+-  "browser.preferences.experimental=true",
+-]
+-
+-["browser_chat_contextmenu.js"]
+-["browser_chat_nimbus.js"]
+-["browser_chat_request.js"]
+-["browser_chat_shortcuts.js"]
+-["browser_chat_sidebar.js"]
+-["browser_chat_telemetry.js"]
+-["browser_genai_actors.js"]
+-["browser_genai_init.js"]
+diff -x .svn -x .git -urN firefox-130.0.orig/browser/components/genai/tests/xpcshell/test_build_chat_prompt.js firefox-130.0/browser/components/genai/tests/xpcshell/test_build_chat_prompt.js
+--- firefox-130.0.orig/browser/components/genai/tests/xpcshell/test_build_chat_prompt.js	2024-09-07 17:26:31.982890064 -0700
++++ firefox-130.0/browser/components/genai/tests/xpcshell/test_build_chat_prompt.js	1969-12-31 16:00:00.000000000 -0800
+@@ -1,138 +0,0 @@
+-/* Any copyright is dedicated to the Public Domain.
+- * http://creativecommons.org/publicdomain/zero/1.0/ */
+-
+-const { GenAI } = ChromeUtils.importESModule(
+-  "resource:///modules/GenAI.sys.mjs"
+-);
+-
+-add_setup(() => {
+-  Services.prefs.setStringPref("browser.ml.chat.prompt.prefix", "");
+-  registerCleanupFunction(() =>
+-    Services.prefs.clearUserPref("browser.ml.chat.prompt.prefix")
+-  );
+-});
+-
+-/**
+- * Check that prompts come from label or value
+- */
+-add_task(function test_basic_prompt() {
+-  Assert.equal(
+-    GenAI.buildChatPrompt({ label: "a" }),
+-    "a",
+-    "Uses label for prompt"
+-  );
+-  Assert.equal(
+-    GenAI.buildChatPrompt({ value: "b" }),
+-    "b",
+-    "Uses value for prompt"
+-  );
+-  Assert.equal(
+-    GenAI.buildChatPrompt({ label: "a", value: "b" }),
+-    "b",
+-    "Prefers value for prompt"
+-  );
+-  Assert.equal(
+-    GenAI.buildChatPrompt({ label: "a", value: "" }),
+-    "a",
+-    "Falls back to label for prompt"
+-  );
+-});
+-
+-/**
+- * Check that placeholders can use context
+- */
+-add_task(function test_prompt_placeholders() {
+-  Assert.equal(
+-    GenAI.buildChatPrompt({ label: "%a%" }),
+-    "%a%",
+-    "Placeholder kept without context"
+-  );
+-  Assert.equal(
+-    GenAI.buildChatPrompt({ label: "%a%" }, { a: "z" }),
+-    "z",
+-    "Placeholder replaced with context"
+-  );
+-  Assert.equal(
+-    GenAI.buildChatPrompt({ label: "%a%%a%%a%" }, { a: "z" }),
+-    "zzz",
+-    "Repeat placeholders replaced with context"
+-  );
+-  Assert.equal(
+-    GenAI.buildChatPrompt({ label: "%a% %b%" }, { a: "z" }),
+-    "z %b%",
+-    "Missing placeholder context not replaced"
+-  );
+-  Assert.equal(
+-    GenAI.buildChatPrompt({ label: "%a% %b%" }, { a: "z", b: "y" }),
+-    "z y",
+-    "Multiple placeholders replaced with context"
+-  );
+-  Assert.equal(
+-    GenAI.buildChatPrompt({ label: "%a% %b%" }, { a: "%b%", b: "y" }),
+-    "%b% y",
+-    "Placeholders from original prompt replaced with context"
+-  );
+-});
+-
+-/**
+- * Check that placeholder options are used
+- */
+-add_task(function test_prompt_placeholder_options() {
+-  Assert.equal(
+-    GenAI.buildChatPrompt({ label: "%a|1%" }, { a: "xyz" }),
+-    "x",
+-    "Context reduced to 1"
+-  );
+-  Assert.equal(
+-    GenAI.buildChatPrompt({ label: "%a|2%" }, { a: "xyz" }),
+-    "xy",
+-    "Context reduced to 2"
+-  );
+-  Assert.equal(
+-    GenAI.buildChatPrompt({ label: "%a|3%" }, { a: "xyz" }),
+-    "xyz",
+-    "Context kept to 3"
+-  );
+-});
+-
+-/**
+- * Check that prefix pref is added to prompt
+- */
+-add_task(async function test_prompt_prefix() {
+-  Services.prefs.setStringPref("browser.ml.chat.prompt.prefix", "hello");
+-  await GenAI.prepareChatPromptPrefix();
+-
+-  Assert.equal(
+-    GenAI.buildChatPrompt({ label: "world" }),
+-    "hello\n\nworld",
+-    "Prefix and prompt combined"
+-  );
+-
+-  Services.prefs.setStringPref("browser.ml.chat.prompt.prefix", "%a%");
+-  await GenAI.prepareChatPromptPrefix();
+-
+-  Assert.equal(
+-    GenAI.buildChatPrompt({ label: "%a%" }, { a: "hi" }),
+-    "hi\n\nhi",
+-    "Context used for prefix and prompt"
+-  );
+-});
+-
+-/**
+- * Check that prefix pref supports localization
+- */
+-add_task(async function test_prompt_prefix() {
+-  Services.prefs.clearUserPref("browser.ml.chat.prompt.prefix");
+-  await GenAI.prepareChatPromptPrefix();
+-
+-  Assert.ok(
+-    JSON.parse(Services.prefs.getStringPref("browser.ml.chat.prompt.prefix"))
+-      .l10nId,
+-    "Default prefix is localized"
+-  );
+-
+-  Assert.ok(
+-    !GenAI.buildChatPrompt({ label: "" }).match(/l10nId/),
+-    "l10nId replaced with localized"
+-  );
+-});
+diff -x .svn -x .git -urN firefox-130.0.orig/browser/components/genai/tests/xpcshell/test_contextual_prompts.js firefox-130.0/browser/components/genai/tests/xpcshell/test_contextual_prompts.js
+--- firefox-130.0.orig/browser/components/genai/tests/xpcshell/test_contextual_prompts.js	2024-09-07 17:26:31.982890064 -0700
++++ firefox-130.0/browser/components/genai/tests/xpcshell/test_contextual_prompts.js	1969-12-31 16:00:00.000000000 -0800
+@@ -1,79 +0,0 @@
+-/* Any copyright is dedicated to the Public Domain.
+- * http://creativecommons.org/publicdomain/zero/1.0/ */
+-
+-const { GenAI } = ChromeUtils.importESModule(
+-  "resource:///modules/GenAI.sys.mjs"
+-);
+-
+-registerCleanupFunction(() =>
+-  Services.prefs.clearUserPref("browser.ml.chat.prompts.test")
+-);
+-
+-const DEFAULT_CONTEXT = { provider: "" };
+-async function promptCount(context = DEFAULT_CONTEXT) {
+-  return (await GenAI.getContextualPrompts(context)).length;
+-}
+-
+-/**
+- * Check prompts from prefs are used
+- */
+-add_task(async function test_prompt_prefs() {
+-  const origPrompts = await promptCount();
+-
+-  Services.prefs.setStringPref("browser.ml.chat.prompts.test", "{}");
+-  Assert.equal(await promptCount(), origPrompts + 1, "Added a prompt");
+-
+-  Services.prefs.setStringPref(
+-    "browser.ml.chat.prompts.test",
+-    JSON.stringify({ targeting: "false" })
+-  );
+-  Assert.equal(
+-    await promptCount(),
+-    origPrompts,
+-    "Prompt not added for targeting"
+-  );
+-});
+-
+-/**
+- * Check context is used for targeting
+- */
+-add_task(async function test_prompt_context() {
+-  Services.prefs.setStringPref(
+-    "browser.ml.chat.prompts.test",
+-    JSON.stringify({ targeting: "provider" })
+-  );
+-  const origPrompts = await promptCount();
+-
+-  Assert.equal(
+-    await promptCount({ provider: "localhost" }),
+-    origPrompts + 1,
+-    "Added contextual prompt"
+-  );
+-
+-  Assert.equal(
+-    await promptCount(),
+-    origPrompts,
+-    "Prompt not added for contextual targeting"
+-  );
+-});
+-
+-/**
+- * Check that prompts can be localized
+- */
+-add_task(async function test_prompt_l10n() {
+-  Services.prefs.setStringPref(
+-    "browser.ml.chat.prompts.test",
+-    JSON.stringify({
+-      l10nId: "genai-prompts-summarize",
+-      label: "bad",
+-      test: true,
+-    })
+-  );
+-  const custom = (await GenAI.getContextualPrompts(DEFAULT_CONTEXT)).find(
+-    prompt => prompt.id == null
+-  );
+-
+-  Assert.ok(custom.test, "Found the custom prompt");
+-  Assert.notEqual(custom.label, "bad", "Localized label takes priority");
+-  Assert.ok(custom.value, "Got localized prompt");
+-});
+diff -x .svn -x .git -urN firefox-130.0.orig/browser/components/genai/tests/xpcshell/test_provider_id.js firefox-130.0/browser/components/genai/tests/xpcshell/test_provider_id.js
+--- firefox-130.0.orig/browser/components/genai/tests/xpcshell/test_provider_id.js	2024-09-07 17:26:31.982890064 -0700
++++ firefox-130.0/browser/components/genai/tests/xpcshell/test_provider_id.js	1969-12-31 16:00:00.000000000 -0800
+@@ -1,68 +0,0 @@
+-/* Any copyright is dedicated to the Public Domain.
+- * http://creativecommons.org/publicdomain/zero/1.0/ */
+-
+-const { GenAI } = ChromeUtils.importESModule(
+-  "resource:///modules/GenAI.sys.mjs"
+-);
+-
+-registerCleanupFunction(() => {
+-  Services.prefs.clearUserPref("browser.ml.chat.provider");
+-  Services.prefs.clearUserPref("browser.ml.chat.providers");
+-});
+-
+-/**
+- * Check various provider ids are converted
+- */
+-add_task(async function test_provider_id() {
+-  Assert.equal(GenAI.getProviderId(""), "none", "Empty is none");
+-  Assert.equal(
+-    GenAI.getProviderId("http://mochi.test"),
+-    "custom",
+-    "Unknown is custom"
+-  );
+-  Assert.equal(
+-    GenAI.getProviderId("http://localhost:8080"),
+-    "localhost",
+-    "Known gets an id"
+-  );
+-  Assert.equal(GenAI.getProviderId(), "none", "Default to empty");
+-
+-  Services.prefs.setStringPref(
+-    "browser.ml.chat.provider",
+-    "http://mochi.test:8888"
+-  );
+-  Assert.equal(GenAI.getProviderId(), "custom", "Used custom pref");
+-});
+-
+-/**
+- * Check that providers can be hidden
+- */
+-add_task(async function test_hide_providers() {
+-  GenAI.init();
+-  const chatgpt = GenAI.chatProviders.get("https://chatgpt.com");
+-
+-  Assert.ok(!chatgpt.hidden, "ChatGPT shown by default");
+-
+-  Services.prefs.setStringPref("browser.ml.chat.providers", "");
+-
+-  Assert.ok(chatgpt.hidden, "ChatGPT hidden");
+-});
+-
+-/**
+- * Check that providers can be ordered
+- */
+-add_task(async function test_providers_order() {
+-  Services.prefs.setStringPref(
+-    "browser.ml.chat.providers",
+-    "huggingchat,chatgpt"
+-  );
+-
+-  const shown = [];
+-  GenAI.chatProviders.forEach(val => {
+-    if (!val.hidden) {
+-      shown.push(val.id);
+-    }
+-  });
+-
+-  Assert.equal(shown, "huggingchat,chatgpt", "Providers reordered");
+-});
+diff -x .svn -x .git -urN firefox-130.0.orig/browser/components/genai/tests/xpcshell/xpcshell.toml firefox-130.0/browser/components/genai/tests/xpcshell/xpcshell.toml
+--- firefox-130.0.orig/browser/components/genai/tests/xpcshell/xpcshell.toml	2024-09-07 17:26:31.982890064 -0700
++++ firefox-130.0/browser/components/genai/tests/xpcshell/xpcshell.toml	1969-12-31 16:00:00.000000000 -0800
+@@ -1,6 +0,0 @@
+-[DEFAULT]
+-firefox-appdir = "browser"
+-
+-["test_build_chat_prompt.js"]
+-["test_contextual_prompts.js"]
+-["test_provider_id.js"]
+diff -x .svn -x .git -urN firefox-130.0.orig/browser/components/moz.build firefox-130.0/browser/components/moz.build
+--- firefox-130.0.orig/browser/components/moz.build	2024-09-07 17:26:32.002890239 -0700
++++ firefox-130.0/browser/components/moz.build	2024-09-07 17:27:50.683577360 -0700
+@@ -41,7 +41,6 @@
+     "enterprisepolicies",
+     "extensions",
+     "firefoxview",
+-    "genai",
+     "ion",
+     "messagepreview",
+     "migration",
+diff -x .svn -x .git -urN firefox-130.0.orig/browser/components/preferences/experimental.inc.xhtml firefox-130.0/browser/components/preferences/experimental.inc.xhtml
+--- firefox-130.0.orig/browser/components/preferences/experimental.inc.xhtml	2024-09-07 17:26:32.018890379 -0700
++++ firefox-130.0/browser/components/preferences/experimental.inc.xhtml	2024-09-07 17:29:38.000515511 -0700
+@@ -31,28 +31,3 @@
+ <html:template id="template-testFeatureGateExtra">
+   <html:div id="testFeatureGateExtraContent">Test extra content</html:div>
+ </html:template>
+-
+-<html:template id="template-genai-chat">
+-    <html:div>
+-        <label id="genai-chat-label"
+-               class="indent"
+-               control="genai-chat-provider"
+-               data-l10n-id="genai-settings-chat-choose"/>
+-        <description class="featureGateDescription indent tip-caption"
+-            data-l10n-id="genai-settings-chat-links"
+-            id="genai-chat-links"/>
+-        <menulist aria-describedby="genai-chat-links"
+-                  class="indent"
+-                  id="genai-chat-provider"
+-                  preference="browser.ml.chat.provider">
+-            <menupopup>
+-                <menuitem data-l10n-id="genai-settings-chat-choose-one-menuitem"
+-                          value=""/>
+-            </menupopup>
+-        </menulist>
+-    </html:div>
+-    <html:moz-checkbox class="indent"
+-                       data-l10n-id="genai-settings-chat-shortcuts"
+-                       id="genai-chat-shortcuts"
+-                       preference="browser.ml.chat.shortcuts"/>
+-</html:template>
+diff -x .svn -x .git -urN firefox-130.0.orig/browser/components/preferences/preferences.xhtml firefox-130.0/browser/components/preferences/preferences.xhtml
+--- firefox-130.0.orig/browser/components/preferences/preferences.xhtml	2024-09-07 17:26:32.018890379 -0700
++++ firefox-130.0/browser/components/preferences/preferences.xhtml	2024-09-07 17:29:52.856645467 -0700
+@@ -54,7 +54,6 @@
+ 
+   <!-- Links below are only used for search-l10n-ids into subdialogs -->
+   <link rel="localization" href="browser/aboutDialog.ftl"/>
+-  <link rel="localization" href="browser/genai.ftl"/>
+   <link rel="localization" href="browser/preferences/addEngine.ftl"/>
+   <link rel="localization" href="browser/preferences/blocklists.ftl"/>
+   <link rel="localization" href="browser/preferences/clearSiteData.ftl"/>
+diff -x .svn -x .git -urN firefox-130.0.orig/browser/components/sidebar/browser-sidebar.js firefox-130.0/browser/components/sidebar/browser-sidebar.js
+--- firefox-130.0.orig/browser/components/sidebar/browser-sidebar.js	2024-09-07 17:26:31.962889890 -0700
++++ firefox-130.0/browser/components/sidebar/browser-sidebar.js	2024-09-07 17:29:13.512301337 -0700
+@@ -8,7 +8,6 @@
+  * and provides APIs for sidebar extensions, etc.
+  */
+ const defaultTools = {
+-  viewGenaiChatSidebar: "aichat",
+   viewTabsSidebar: "syncedtabs",
+   viewHistorySidebar: "history",
+   viewBookmarksSidebar: "bookmarks",
+@@ -112,20 +111,6 @@
+       ],
+     ]);
+ 
+-    this.registerPrefSidebar(
+-      "browser.ml.chat.enabled",
+-      "viewGenaiChatSidebar",
+-      {
+-        elementId: "sidebar-switcher-genai-chat",
+-        url: "chrome://browser/content/genai/chat.html",
+-        menuId: "menu_genaiChatSidebar",
+-        menuL10nId: "menu-view-genai-chat",
+-        // Bug 1900915 to expose as conditional tool
+-        revampL10nId: "sidebar-menu-genai-chat-label",
+-        iconUrl: "chrome://mozapps/skin/extensions/category-discover.svg",
+-      }
+-    );
+-
+     if (!this.sidebarRevampEnabled) {
+       this.registerPrefSidebar(
+         "browser.megalist.enabled",
+diff -x .svn -x .git -urN firefox-130.0.orig/browser/components/sidebar/sidebar-customize.mjs firefox-130.0/browser/components/sidebar/sidebar-customize.mjs
+--- firefox-130.0.orig/browser/components/sidebar/sidebar-customize.mjs	2024-09-07 17:26:31.962889890 -0700
++++ firefox-130.0/browser/components/sidebar/sidebar-customize.mjs	2024-09-07 17:29:03.444213304 -0700
+@@ -10,7 +10,6 @@
+ import "chrome://global/content/elements/moz-radio-group.mjs";
+ 
+ const l10nMap = new Map([
+-  ["viewGenaiChatSidebar", "sidebar-menu-genai-chat-label"],
+   ["viewHistorySidebar", "sidebar-menu-history-label"],
+   ["viewTabsSidebar", "sidebar-menu-synced-tabs-label"],
+   ["viewBookmarksSidebar", "sidebar-menu-bookmarks-label"],
+diff -x .svn -x .git -urN firefox-130.0.orig/browser/components/sidebar/tests/browser/browser_sidebar_panel_switcher.js firefox-130.0/browser/components/sidebar/tests/browser/browser_sidebar_panel_switcher.js
+--- firefox-130.0.orig/browser/components/sidebar/tests/browser/browser_sidebar_panel_switcher.js	2024-09-07 17:26:31.962889890 -0700
++++ firefox-130.0/browser/components/sidebar/tests/browser/browser_sidebar_panel_switcher.js	2024-09-07 17:28:46.944069039 -0700
+@@ -13,19 +13,3 @@
+   await SpecialPowers.pushPrefEnv({ set: [["browser.ml.chat.enabled", true]] });
+   is(switcherPanel.childElementCount, origCount + 1, "Added menu item");
+ });
+-
+-/**
+- * Check that activating the switcher while already open stays open
+- */
+-add_task(async function test_switcher_twice() {
+-  ok(!SidebarController.isOpen, "Starts closed");
+-
+-  const item = document.getElementById("sidebar-switcher-genai-chat");
+-  item.click();
+-  ok(SidebarController.isOpen, "Opens on first click");
+-
+-  item.click();
+-  ok(SidebarController.isOpen, "Stays open on second click");
+-
+-  SidebarController.hide();
+-});
+diff -x .svn -x .git -urN firefox-130.0.orig/browser/components/sidebar/tests/browser/browser_view_sidebar_menu.js firefox-130.0/browser/components/sidebar/tests/browser/browser_view_sidebar_menu.js
+--- firefox-130.0.orig/browser/components/sidebar/tests/browser/browser_view_sidebar_menu.js	2024-09-07 17:26:31.962889890 -0700
++++ firefox-130.0/browser/components/sidebar/tests/browser/browser_view_sidebar_menu.js	2024-09-07 17:28:56.008148279 -0700
+@@ -29,19 +29,3 @@
+   });
+   ok(!item.hidden, "Megalist sidebar menu item shown");
+ });
+-
+-/**
+- * Check that pref controlled chat sidebar menu item is hidden/shown
+- */
+-add_task(async function test_megalist_menu() {
+-  const { document } = win;
+-  const item = document.getElementById("menu_genaiChatSidebar");
+-  await SpecialPowers.pushPrefEnv({
+-    set: [["browser.ml.chat.enabled", false]],
+-  });
+-  ok(item.hidden, "Chat sidebar menu item hidden");
+-  await SpecialPowers.pushPrefEnv({
+-    set: [["browser.ml.chat.enabled", true]],
+-  });
+-  ok(!item.hidden, "Chat sidebar menu item shown");
+-});
+diff -x .svn -x .git -urN firefox-130.0.orig/browser/locales/en-US/browser/genai.ftl firefox-130.0/browser/locales/en-US/browser/genai.ftl
+--- firefox-130.0.orig/browser/locales/en-US/browser/genai.ftl	2024-09-07 17:26:31.898889331 -0700
++++ firefox-130.0/browser/locales/en-US/browser/genai.ftl	1969-12-31 16:00:00.000000000 -0800
+@@ -1,63 +0,0 @@
+-# This Source Code Form is subject to the terms of the Mozilla Public
+-# License, v. 2.0. If a copy of the MPL was not distributed with this
+-# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+-
+-## Generative AI (GenAI) Settings section
+-
+-genai-settings-chat-description = Adds the chatbot of your choice to the sidebar, for quick access as you browse. <a data-l10n-name="connect">Share feedback</a>
+-genai-settings-chat-choose = Choose a chatbot
+-genai-settings-chat-choose-one-menuitem =
+-    .label = Choose one
+-genai-settings-chat-links = When you choose a chatbot, you agree to the provider’s terms of use and privacy policy.
+-genai-settings-chat-chatgpt-links = By choosing ChatGPT, you agree to the OpenAI <a data-l10n-name="link1">Terms of Use</a> and <a data-l10n-name="link2">Privacy Policy</a>.
+-genai-settings-chat-claude-links = By choosing Anthropic Claude, you agree to the Anthropic <a data-l10n-name="link1">Consumer Terms of Service</a>, <a data-l10n-name="link2">Usage Policy</a>, and <a data-l10n-name="link3">Privacy Policy</a>.
+-genai-settings-chat-copilot-links = By choosing Copilot, you agree to the <a data-l10n-name="link1">Copilot AI Experiences Terms</a> and <a data-l10n-name="link2">Microsoft Privacy Statement</a>.
+-genai-settings-chat-gemini-links = By choosing Google Gemini, you agree to the <a data-l10n-name="link1">Google Terms of Service</a>, <a data-l10n-name="link2">Generative AI Prohibited Use Policy</a>, and <a data-l10n-name="link3">Gemini Apps Privacy Notice</a>.
+-genai-settings-chat-huggingchat-links = By choosing HuggingChat, you agree to the <a data-l10n-name="link1">HuggingChat Privacy Notice</a> and <a data-l10n-name="link2">Hugging Face Privacy Policy</a>.
+-genai-settings-chat-lechat-links = By choosing Le Chat Mistral, you agree to the Mistral AI <a data-l10n-name="link1">Terms of Service</a> and <a data-l10n-name="link2">Privacy Policy</a>.
+-genai-settings-chat-localhost-links = Bring your own private local chatbot such as <a data-l10n-name="link1">llamafile</a> from { -vendor-short-name }’s Innovation group.
+-genai-settings-chat-shortcuts =
+-    .description = Displays a shortcut to prompts when you select text. { -brand-short-name } sends the text, page title, and prompt to the chatbot.
+-    .label = Show prompts on text select
+-
+-## Chatbot prompts
+-## Prompts are plain language ‘instructions’ sent to a chatbot.
+-## These prompts have been made concise and direct in English because some chatbot providers
+-## have character restrictions and being direct reduces the chance for misinterpretation.
+-## When localizing, please be concise and direct, but not at the expense of losing meaning.
+-
+-# This prompt is added to the beginning of selection prompts sent to a chatbot.
+-# $tabTitle (string) - title of the webpage
+-# $selection (string) - selected text
+-genai-prompt-prefix-selection = I’m on page “{ $tabTitle }” with “{ $selection }” selected.
+-
+-# Prompt purpose: help users understand what a selection covers at a glance
+-genai-prompts-summarize =
+-    .label = Summarize
+-    .value = Please summarize the selection using precise and concise language. Use headers and bulleted lists in the summary, to make it scannable. Maintain the meaning and factual accuracy.
+-# Prompt purpose: make a selection easier to read
+-genai-prompts-simplify =
+-    .label = Simplify language
+-    .value = Please rewrite the selection using short sentences and simple words. Maintain the meaning and factual accuracy.
+-# Prompt purpose: test understanding of selection in an interactive way
+-genai-prompts-quiz =
+-    .label = Quiz me
+-    .value = Please quiz me on this selection. Ask me a variety of types of questions, for example multiple choice, true or false, and short answer. Wait for my response before moving on to the next question.
+-# Prompt purpose: helps users understand words, phrases, concepts
+-genai-prompts-explain =
+-    .label = Explain this
+-    .value = Please explain the key concepts in this selection, using simple words. Also, use examples.
+-
+-## Chatbot menu shortcuts
+-
+-genai-menu-ask-generic =
+-    .label = Ask AI chatbot
+-# $provider (string) - name of the provider
+-genai-menu-ask-provider =
+-    .label = Ask { $provider }
+-
+-genai-input-ask-generic =
+-    .placeholder = Ask AI chatbot…
+-# $provider (string) - name of the provider
+-genai-input-ask-provider =
+-    .placeholder = Ask { $provider }…
+diff -x .svn -x .git -urN firefox-130.0.orig/browser/locales/en-US/browser/sidebar.ftl firefox-130.0/browser/locales/en-US/browser/sidebar.ftl
+--- firefox-130.0.orig/browser/locales/en-US/browser/sidebar.ftl	2024-09-07 17:26:31.894889296 -0700
++++ firefox-130.0/browser/locales/en-US/browser/sidebar.ftl	2024-09-07 17:26:49.099039488 -0700
+@@ -2,9 +2,6 @@
+ # License, v. 2.0. If a copy of the MPL was not distributed with this
+ # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ 
+-menu-view-genai-chat =
+-  .label = AI Chatbot
+-
+ ## Labels for sidebar history panel
+ 
+ # Variables:
+@@ -63,8 +60,6 @@
+ 
+ ## Labels for sidebar menu items.
+ 
+-sidebar-menu-genai-chat-label =
+-  .label = AI chatbot
+ sidebar-menu-history-label =
+   .label = History
+ sidebar-menu-synced-tabs-label =
+diff -x .svn -x .git -urN firefox-130.0.orig/browser/themes/shared/preferences/preferences.css firefox-130.0/browser/themes/shared/preferences/preferences.css
+--- firefox-130.0.orig/browser/themes/shared/preferences/preferences.css	2024-09-07 17:26:32.090891007 -0700
++++ firefox-130.0/browser/themes/shared/preferences/preferences.css	2024-09-07 17:27:46.263538741 -0700
+@@ -1218,17 +1218,6 @@
+   white-space: pre-wrap;
+ }
+ 
+-#genai-chat-label,
+-#genai-chat-provider,
+-#genai-chat-links {
+-  margin-block: 0 var(--input-space-block);
+-}
+-
+-#genai-chat-provider {
+-  width: min-content;
+-  min-width: 20em;
+-}
+-
+ .checkbox-row {
+   display: flex;
+   align-items: baseline;
+diff -x .svn -x .git -urN firefox-130.0.orig/browser/themes/shared/sidebar.css firefox-130.0/browser/themes/shared/sidebar.css
+--- firefox-130.0.orig/browser/themes/shared/sidebar.css	2024-09-07 17:26:32.094891042 -0700
++++ firefox-130.0/browser/themes/shared/sidebar.css	2024-09-07 17:28:14.339784059 -0700
+@@ -29,10 +29,6 @@
+   @media (-moz-bool-pref: "sidebar.revamp") {
+     min-width: 200px;
+   }
+-
+-  &[sidebarcommand="viewGenaiChatSidebar"] {
+-    min-width: 400px;
+-  }
+ }
+ 
+ #sidebar-header {
+diff -x .svn -x .git -urN firefox-130.0.orig/toolkit/components/featuregates/Features.toml firefox-130.0/toolkit/components/featuregates/Features.toml
+--- firefox-130.0.orig/toolkit/components/featuregates/Features.toml	2024-09-07 17:26:24.498824739 -0700
++++ firefox-130.0/toolkit/components/featuregates/Features.toml	2024-09-07 17:29:45.604582024 -0700
+@@ -14,18 +14,6 @@
+ # based on the order of appearance in this file. Settings within
+ # a group will also be determined by their order in this file.
+ 
+-[genai-chat]
+-group = "experimental-features-group-browsing"
+-title = "genai-settings-chat-title"
+-description = "genai-settings-chat-description"
+-description-links = {connect= "https://connect.mozilla.org/t5/discussions/share-your-feedback-on-the-ai-services-experiment-in-nightly/m-p/60519#M21202"}
+-restart-required = false
+-preference = "browser.ml.chat.enabled"
+-type = "boolean"
+-bug-numbers = [1894999]
+-is-public-jexl = "!'browser.ml.chat.hideFromLabs'|preferenceValue"
+-default-value-jexl = "false"
+-
+ [auto-pip]
+ group = "experimental-features-group-browsing"
+ title = "experimental-features-auto-pip"
+diff -x .svn -x .git -urN firefox-130.0.orig/toolkit/components/glean/metrics_index.py firefox-130.0/toolkit/components/glean/metrics_index.py
+--- firefox-130.0.orig/toolkit/components/glean/metrics_index.py	2024-09-07 17:26:24.738826834 -0700
++++ firefox-130.0/toolkit/components/glean/metrics_index.py	2024-09-07 17:29:26.496414890 -0700
+@@ -58,7 +58,6 @@
+ # Order is lexicographical, enforced by t/c/glean/tests/pytest/test_yaml_indices.py
+ firefox_desktop_metrics = [
+     "browser/components/backup/metrics.yaml",
+-    "browser/components/genai/metrics.yaml",
+     "browser/components/metrics.yaml",
+     "browser/components/migration/metrics.yaml",
+     "browser/components/newtab/metrics.yaml",
+diff -x .svn -x .git -urN firefox-130.0.orig/toolkit/locales/en-US/toolkit/featuregates/features.ftl firefox-130.0/toolkit/locales/en-US/toolkit/featuregates/features.ftl
+--- firefox-130.0.orig/toolkit/locales/en-US/toolkit/featuregates/features.ftl	2024-09-07 17:26:24.442824250 -0700
++++ firefox-130.0/toolkit/locales/en-US/toolkit/featuregates/features.ftl	2024-09-07 17:29:21.208368652 -0700
+@@ -51,9 +51,6 @@
+     .label = Picture-in-Picture: auto-open on tab switch
+ experimental-features-auto-pip-description = Enable Picture-in-Picture on active videos when switching tabs.
+ 
+-genai-settings-chat-title =
+-    .label = AI chatbot
+-
+ experimental-features-group-browsing =
+   .label = Browsing
+ experimental-features-group-developer-tools =
